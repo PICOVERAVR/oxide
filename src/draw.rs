@@ -1,36 +1,12 @@
 #[derive(Debug, Clone, Copy)]
-pub struct Pixel {
+pub struct Color {
     pub r: u8,
     pub g: u8,
     pub b: u8,
 }
 
-/*
-
-plotLine(int x0, int y0, int x1, int y1)
-    dx =  abs(x1-x0);
-    sx = x0<x1 ? 1 : -1;
-    dy = -abs(y1-y0);
-    sy = y0<y1 ? 1 : -1;
-    err = dx+dy;  /* error value e_xy */
-    while (true)   /* loop */
-        plot(x0, y0);
-        if (x0 == x1 && y0 == y1) break;
-        e2 = 2*err;
-        if (e2 >= dy) /* e_xy+e_x > 0 */
-            err += dy;
-            x0 += sx;
-        end if
-        if (e2 <= dx) /* e_xy+e_y < 0 */
-            err += dx;
-            y0 += sy;
-        end if
-    end while
-
-*/
-
 // draw a line from start to end using Bresenham's line algorithm
-pub fn draw_line(buf: &mut Vec<Pixel>, rlen: usize, start: (i32, i32), end: (i32, i32), color: Pixel) {
+pub fn draw_line(buf: &mut Vec<Color>, rlen: usize, start: (i32, i32), end: (i32, i32), color: Color) {
     let dx = i32::abs(end.0 - start.0);
     let dy = -i32::abs(end.1 - start.1);
 

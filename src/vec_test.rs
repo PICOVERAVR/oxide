@@ -33,4 +33,12 @@ mod tests {
 
         assert_eq!(dot(&v1, &v2), 35);
     }
+
+    #[test]
+    fn num_test() {
+        let v = vec![5.0, 0.0, 0.0, 0.0];
+        let vn = vec![1.0, 0.0, 0.0, 0.0];
+
+        assert_eq!(norm(&v), vn);
+    }
 }
