@@ -53,10 +53,6 @@ pub fn draw_line(buf: &mut Vec<Pixel>, rlen: usize, start: (i32, i32), end: (i32
     loop {
         let cidx = y as usize * rlen + x as usize;
 
-        if cidx >= buf.len() {
-            break; // corner case (literally) where end is the end of the buffer
-        }
-
         buf[cidx] = color;
 
         if x == end.0 && y == end.1 {

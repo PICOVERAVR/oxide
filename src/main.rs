@@ -34,7 +34,7 @@ fn main() -> std::io::Result<()> {
     }
 
     let color = Pixel { r: 255, g: 255, b: 255 };
-    draw_line(&mut ppm, width, (0, 0), (1920, 1080), color);
+    draw_line(&mut ppm, width, (0, 0), (1919, 1079), color);
 
     // TODO: 2nd byte copy is pretty wasteful, can get around this with an unsafe block?
     let bytes = pixels * 3;
