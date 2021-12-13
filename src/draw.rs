@@ -5,6 +5,15 @@ pub struct Color {
     pub b: u8,
 }
 
+// maps a float vector to a concrete color type
+pub fn map_color(v: &[f32]) -> Color {
+    Color {
+        r: (v[0] * u8::max_value() as f32) as u8,
+        g: (v[1] * u8::max_value() as f32) as u8,
+        b: (v[2] * u8::max_value() as f32) as u8,
+    }
+}
+
 // draw a line from start to end using Bresenham's line algorithm
 pub fn draw_line(buf: &mut Vec<Color>, rlen: usize, start: (i32, i32), end: (i32, i32), color: Color) {
     let dx = i32::abs(end.0 - start.0);

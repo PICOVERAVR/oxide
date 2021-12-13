@@ -54,24 +54,32 @@ fn main() -> std::io::Result<()> {
         Sphere {
             c: vec![0.0, 0.0, 4.0],
             r: 0.5,
-            color: Color {r: 255, g: 0, b: 0},
+            color: vec![1.0, 0.0, 0.0],
         },
         Sphere {
             c: vec![1.0, 1.0, 5.0],
             r: 0.5,
-            color: Color {r: 0, g: 255, b: 0},
+            color: vec![0.0, 1.0, 0.0],
         },
         Sphere {
             c: vec![-1.0, 1.0, 5.0],
             r: 0.5,
-            color: Color {r: 0, g: 0, b: 255},
+            color: vec![0.0, 0.0, 1.0],
         },
     ];
 
     let plane = Plane {
         n: vec![0.0, 1.0, 0.0],
-        color: Color {r: 100, g: 100, b: 100},
+        color: vec![0.5, 0.5, 0.5],
     };
+
+    let lights = vec![
+        Light {
+            color: vec![1.0, 1.0, 1.0],
+            pos: vec![0.0, 0.0, 10.0],
+            kind: LightType::Point,
+        },
+    ];
 
     for y in -height/2..height/2 {
         for x in -width/2..width/2 {
@@ -91,23 +99,33 @@ fn main() -> std::io::Result<()> {
                 d,
             };
 
+            // very basic rendering for plane first
             match plane.hit(&v_ray, (view_dist, 100.0)) {
-                HitType::Closest(_t) => draw_pixel(&mut ppm, x, y, plane.color),
-                HitType::Edge(_t) => draw_pixel(&mut ppm, x, y, plane.color),
+                HitType::Hit(_t) => draw_pixel(&mut ppm, x, y, map_color(&plane.color)),
                 HitType::Miss() => (),
             }
 
             for s in &spheres {
-                match s.hit(&v_ray, (view_dist, 100.0)) {
-                    HitType::Closest(_t) => draw_pixel(&mut ppm, x, y, s.color),
-                    HitType::Edge(_t) => draw_pixel(&mut ppm, x, y, s.color),
-                    HitType::Miss() => (),
+                if let HitType::Hit(t) = s.hit(&v_ray, (view_dist, 100.0)) {
+
+                    let p = add(&v_ray.o, &mul(&[t, t, t], &v_ray.d)); // compute intersection point
+
+                    let mut color_v = vec![0f32, 0f32, 0f32];
+                    for l in &lights {
+                        color_v = add(&color_v, &s.light(&v_ray, l, &p));
+                    }
+
+                    // clamp sum of light colors to correct output range and multiply by surface color
+                    let color_v = mul(&s.color, &clamp(&color_v, 0.0, 1.0));
+
+                    draw_pixel(&mut ppm, x, y, map_color(&color_v));
                 }
             }
+
         }
     }
 
-    // TODO: 2nd byte copy is pretty wasteful, can get around this with an unsafe block?
+    // NOTE: buffer copy here to transform buffer from Vec<Color> to Vec<u8> in a safe way
     let bytes = pixels * 3;
     let mut ppm_bytes: Vec<u8> = Vec::with_capacity(bytes);
 

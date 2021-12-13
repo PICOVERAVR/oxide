@@ -5,8 +5,8 @@ pub fn add<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     where T: Add<Output = T> + Copy
     {
     assert_eq!(lhs.len(), rhs.len()); // make sure vectors are of the same size
-    assert!(lhs.len() != 0);
-    assert!(rhs.len() != 0);
+    assert!(!lhs.is_empty());
+    assert!(!rhs.is_empty());
 
     let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
 
@@ -21,8 +21,8 @@ pub fn sub<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     where T: Sub<Output = T> + Copy
     {
     assert_eq!(lhs.len(), rhs.len());
-    assert!(lhs.len() != 0);
-    assert!(rhs.len() != 0);
+    assert!(!lhs.is_empty());
+    assert!(!rhs.is_empty());
 
     let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
 
@@ -37,8 +37,8 @@ pub fn mul<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     where T: Mul<Output = T> + Copy
     {
     assert_eq!(lhs.len(), rhs.len());
-    assert!(lhs.len() != 0);
-    assert!(rhs.len() != 0);
+    assert!(!lhs.is_empty());
+    assert!(!rhs.is_empty());
 
     let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
 
@@ -70,7 +70,7 @@ pub fn norm<T>(v: &[T]) -> Vec<T>
     where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
     {
 
-    let mag = dot(&v, &v).sqrt();
+    let mag = dot(v, v).sqrt();
 
     let mut ret: Vec<T> = Vec::with_capacity(v.len());
 
@@ -90,6 +90,27 @@ pub fn neg<T>(v: &[T]) -> Vec<T>
 
     for x in v {
         ret.push(-*x);
+    }
+
+    ret
+}
+
+// clamp all values in a vector to [min, max]
+pub fn clamp<T>(v: &[T], min: T, max: T) -> Vec<T>
+    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    {
+
+    let mut ret: Vec<T> = Vec::with_capacity(v.len());
+
+    for x in v {
+        let x = match *x {
+            _low if *x < min => min,
+            _in if min <= *x && *x <= max => *x,
+            _high if *x > max => max,
+            _ => panic!(),
+        };
+
+        ret.push(x);
     }
 
     ret

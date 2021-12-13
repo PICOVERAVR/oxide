@@ -35,10 +35,16 @@ mod tests {
     }
 
     #[test]
-    fn num_test() {
+    fn norm_test() {
         let v = vec![5.0, 0.0, 0.0, 0.0];
-        let vn = vec![1.0, 0.0, 0.0, 0.0];
 
-        assert_eq!(norm(&v), vn);
+        assert_eq!(norm(&v), vec![1.0, 0.0, 0.0, 0.0]);
+    }
+
+    #[test]
+    fn clamp_test() {
+        let v = vec![-5.0, -1.0, 0.0, 1.0, 5.0];
+
+        assert_eq!(clamp(&v, -1.0, 1.0), vec![-1.0, -1.0, 0.0, 1.0, 1.0]);
     }
 }

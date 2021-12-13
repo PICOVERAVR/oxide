@@ -11,40 +11,57 @@ pub fn draw_pixel(ppm: &mut Matrix<Color>, x: i32, y: i32, color: Color) {
     ppm.mat[ay as usize * ppm.rlen + ax as usize] = color;
 }
 
+pub enum LightType {
+    Point,
+    Directional,
+    Ambient,
+}
+
+pub struct Light {
+    pub color: Vec<f32>,
+    pub pos: Vec<f32>,
+    pub kind: LightType,
+}
+
 pub struct Ray {
     pub o: Vec<f32>,
     pub d: Vec<f32>,
 }
 
+#[derive(PartialEq)]
 pub enum HitType {
-    Closest(f32),
-    Edge(f32),
+    Hit(f32), // returns closest time t of intersection
     Miss(),
 }
 
 pub trait RayInteraction {
     fn hit(&self, r: &Ray, t: (f32, f32)) -> HitType;
+    fn light(&self, r: &Ray, l: &Light, p: &[f32]) -> Vec<f32>;
 }
 
 pub struct Plane {
     pub n: Vec<f32>,
-    pub color: Color,
+    pub color: Vec<f32>,
 }
 
 impl RayInteraction for Plane {
     fn hit(&self, r: &Ray, _t: (f32, f32)) -> HitType {
         if dot(&norm(&neg(&self.n)), &norm(&r.d)) > 0.0 {
-            return HitType::Closest(0.0) // TODO
+            return HitType::Hit(0.0) // TODO
         }
 
         HitType::Miss()
+    }
+
+    fn light(&self, _r: &Ray, _l: &Light, p: &[f32]) -> Vec<f32> {
+        vec![1.0, 1.0, 0.0]
     }
 }
 
 pub struct Sphere {
     pub c: Vec<f32>,
     pub r: f32,
-    pub color: Color,
+    pub color: Vec<f32>,
 }
 
 impl RayInteraction for Sphere {
@@ -79,13 +96,17 @@ impl RayInteraction for Sphere {
         // man, enum variants are cool
         match (t1, t2) {
             _miss if t1.is_infinite() && t2.is_infinite() => HitType::Miss(),
-            _edge if !t1.is_infinite() && t2.is_infinite() => HitType::Edge(t1),
-            _edge if t1.is_infinite() && !t2.is_infinite() => HitType::Edge(t2),
+            _edge if !t1.is_infinite() && t2.is_infinite() => HitType::Hit(t1),
+            _edge if t1.is_infinite() && !t2.is_infinite() => HitType::Hit(t2),
             _int if !t1.is_infinite() && !t2.is_infinite() => match (t1, t2) {
-                _t1 if t1 < t2 => HitType::Closest(t1),
-                _t2 => HitType::Closest(t2), // t1 >= t2
+                _t1 if t1 < t2 => HitType::Hit(t1),
+                _t2 => HitType::Hit(t2), // t1 >= t2
             },
             (_, _) => panic!(),
         }
+    }
+
+    fn light(&self, _r: &Ray, _l: &Light, p: &[f32]) -> Vec<f32> {
+        vec![1.0, 0.0, 1.0]
     }
 }
