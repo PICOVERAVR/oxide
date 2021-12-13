@@ -76,8 +76,7 @@ fn main() -> std::io::Result<()> {
     let lights = vec![
         Light {
             color: vec![1.0, 1.0, 1.0],
-            pos: vec![0.0, 0.0, 10.0],
-            kind: LightType::Point,
+            kind: LightType::Point(vec![0.0, 2.0, 2.0]),
         },
     ];
 
@@ -101,7 +100,7 @@ fn main() -> std::io::Result<()> {
 
             // very basic rendering for plane first
             match plane.hit(&v_ray, (view_dist, 100.0)) {
-                HitType::Hit(_t) => draw_pixel(&mut ppm, x, y, map_color(&plane.color)),
+                HitType::Hit(_t) => draw_pixel(&mut ppm, x, y, map_color(&[0.2, 0.2, 0.2])),
                 HitType::Miss() => (),
             }
 
@@ -110,9 +109,9 @@ fn main() -> std::io::Result<()> {
 
                     let p = add(&v_ray.o, &mul(&[t, t, t], &v_ray.d)); // compute intersection point
 
-                    let mut color_v = vec![0f32, 0f32, 0f32];
+                    let mut color_v = vec![0.0, 0.0, 0.0];
                     for l in &lights {
-                        color_v = add(&color_v, &s.light(&v_ray, l, &p));
+                        color_v = add(&color_v, &light(s, &p, l));
                     }
 
                     // clamp sum of light colors to correct output range and multiply by surface color

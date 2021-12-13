@@ -12,14 +12,13 @@ pub fn draw_pixel(ppm: &mut Matrix<Color>, x: i32, y: i32, color: Color) {
 }
 
 pub enum LightType {
-    Point,
-    Directional,
+    Point(Vec<f32>),
+    Directional(Vec<f32>),
     Ambient,
 }
 
 pub struct Light {
     pub color: Vec<f32>,
-    pub pos: Vec<f32>,
     pub kind: LightType,
 }
 
@@ -34,11 +33,19 @@ pub enum HitType {
     Miss(),
 }
 
+// behavior needed to interact with traced rays
 pub trait RayInteraction {
+    // check for hit from ray r over time range t
     fn hit(&self, r: &Ray, t: (f32, f32)) -> HitType;
-    fn light(&self, r: &Ray, l: &Light, p: &[f32]) -> Vec<f32>;
+
+    // calculate normal at point p on surface
+    fn normal(&self, p: &[f32]) -> Vec<f32>;
+
+    // calculate color at point p on surface
+    fn color(&self, p: &[f32]) -> Vec<f32>;
 }
 
+// an infinite plane with a given normal
 pub struct Plane {
     pub n: Vec<f32>,
     pub color: Vec<f32>,
@@ -53,8 +60,12 @@ impl RayInteraction for Plane {
         HitType::Miss()
     }
 
-    fn light(&self, _r: &Ray, _l: &Light, p: &[f32]) -> Vec<f32> {
-        vec![1.0, 1.0, 0.0]
+    fn normal(&self, _p: &[f32]) -> Vec<f32> {
+        self.n.to_vec()
+    }
+
+    fn color(&self, _p: &[f32]) -> Vec<f32> {
+        self.color.to_vec()
     }
 }
 
@@ -106,7 +117,26 @@ impl RayInteraction for Sphere {
         }
     }
 
-    fn light(&self, _r: &Ray, _l: &Light, p: &[f32]) -> Vec<f32> {
-        vec![1.0, 0.0, 1.0]
+    fn normal(&self, p: &[f32]) -> Vec<f32> {
+        norm(&sub(p, &self.c))
     }
+
+    fn color(&self, _p: &[f32]) -> Vec<f32> {
+        self.color.to_vec()
+    }
+}
+
+// runs lighting calculations at point p
+pub fn light(obj: &impl RayInteraction, p: &[f32], l: &Light) -> Vec<f32> {
+    let lv = match &l.kind {
+        LightType::Point(lp) => sub(lp, p),
+        LightType::Directional(ldir) => ldir.to_vec(),
+        LightType::Ambient => vec![1.0, 1.0, 1.0],
+    };
+
+    let i = norm(&lv);
+    
+    let diff = dot(&obj.normal(p), &i).max(0.0); // clamp to 0
+    
+    mul(&[diff, diff, diff], &l.color) // diff * color
 }

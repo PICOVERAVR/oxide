@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub, Mul, Div};
 use num_traits::float::Float;
 
-pub fn add<T>(lhs: &[T], rhs: &[T]) -> Vec<T> 
+pub fn add<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     where T: Add<Output = T> + Copy
     {
     assert_eq!(lhs.len(), rhs.len()); // make sure vectors are of the same size
@@ -111,6 +111,47 @@ pub fn clamp<T>(v: &[T], min: T, max: T) -> Vec<T>
         };
 
         ret.push(x);
+    }
+
+    ret
+}
+
+// return minimum of two vectors, element-wise
+pub fn min<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
+    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    {
+    assert_eq!(lhs.len(), rhs.len());
+
+    let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
+
+    for (i, &x) in lhs.iter().enumerate() {
+        let cmp = match x {
+            _lhs if x < rhs[i] => x,
+            _rhs if x >= rhs[i] => rhs[i],
+            _ => panic!(),
+        };
+
+        ret.push(cmp)
+    }
+
+    ret
+}
+
+// return maximum of two vectors, element wise
+pub fn max<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
+    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    {
+
+    let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
+
+    for (i, &x) in lhs.iter().enumerate() {
+        let cmp = match x {
+            _lhs if x > rhs[i] => x,
+            _rhs if x <= rhs[i] => rhs[i],
+            _ => panic!(),
+        };
+
+        ret.push(cmp)
     }
 
     ret
