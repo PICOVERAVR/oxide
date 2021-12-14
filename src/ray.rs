@@ -12,8 +12,8 @@ pub fn draw_pixel(ppm: &mut Matrix<Color>, x: i32, y: i32, color: Color) {
 }
 
 pub enum LightType {
-    Point(Vec<f32>),
-    Directional(Vec<f32>),
+    Point(Vec<f32>), // holds the position of the light
+    Directional(Vec<f32>), // holds the direction going _to_ the light
     Ambient,
 }
 
@@ -33,6 +33,12 @@ pub enum HitType {
     Miss(),
 }
 
+#[derive(Clone)]
+pub struct Material {
+    pub color: Vec<f32>,
+    pub spec: f32,
+}
+
 // behavior needed to interact with traced rays
 pub trait RayInteraction {
     // check for hit from ray r over time range t
@@ -42,13 +48,13 @@ pub trait RayInteraction {
     fn normal(&self, p: &[f32]) -> Vec<f32>;
 
     // calculate color at point p on surface
-    fn color(&self, p: &[f32]) -> Vec<f32>;
+    fn material(&self, p: &[f32]) -> &Material;
 }
 
 // an infinite plane with a given normal
 pub struct Plane {
     pub n: Vec<f32>,
-    pub color: Vec<f32>,
+    pub mat: Material,
 }
 
 impl RayInteraction for Plane {
@@ -64,15 +70,15 @@ impl RayInteraction for Plane {
         self.n.to_vec()
     }
 
-    fn color(&self, _p: &[f32]) -> Vec<f32> {
-        self.color.to_vec()
+    fn material(&self, _p: &[f32]) -> &Material {
+        &self.mat
     }
 }
 
 pub struct Sphere {
     pub c: Vec<f32>,
     pub r: f32,
-    pub color: Vec<f32>,
+    pub mat: Material,
 }
 
 impl RayInteraction for Sphere {
@@ -121,22 +127,45 @@ impl RayInteraction for Sphere {
         norm(&sub(p, &self.c))
     }
 
-    fn color(&self, _p: &[f32]) -> Vec<f32> {
-        self.color.to_vec()
+    fn material(&self, _p: &[f32]) -> &Material {
+        &self.mat
     }
 }
 
 // runs lighting calculations at point p
-pub fn light(obj: &impl RayInteraction, p: &[f32], l: &Light) -> Vec<f32> {
-    let lv = match &l.kind {
+pub fn light(obj: &impl RayInteraction, p: &[f32], light: &Light) -> Vec<f32> {
+
+    let lc = &light.color;
+
+    // calculate vector going _to_ the light source
+    let l = match &light.kind {
         LightType::Point(lp) => sub(lp, p),
         LightType::Directional(ldir) => ldir.to_vec(),
-        LightType::Ambient => vec![1.0, 1.0, 1.0],
+        LightType::Ambient => return lc.to_vec(),
     };
 
-    let i = norm(&lv);
+    let i = norm(&l);
+    let n = obj.normal(p);
+
+    let m = obj.material(p);
+
+    // multiply by both the material color and light color, as diffuse light is affected by both
+    let diff = dot(&n, &i).max(0.0);
+    let mut color = mul(&mul(&[diff, diff, diff], &m.color), &light.color);
+
+    // find reflected ray r off object with equation 2 * N * dot(N, L) - L
+    // N = normal, L = vector going _to_ light source
+    let spec_scalar = 2.0 * dot(&n, &l);
+    let r = sub(&mul(&[spec_scalar, spec_scalar, spec_scalar], &n), &l);
     
-    let diff = dot(&obj.normal(p), &i).max(0.0); // clamp to 0
+    let np = [-p[0], -p[1], -p[2]]; // negative p, or a vector to the camera
+    let spec_dot = dot(&norm(&r), &norm(&np));
+    if m.spec > 0.0 && spec_dot > 0.0 {
+        // diff * color + spec
+        let spec = spec_dot.powf(m.spec);
+        let specc = mul(&[spec, spec, spec], lc); // specular color depends on light source
+        color = add(&color, &specc);
+    }
     
-    mul(&[diff, diff, diff], &l.color) // diff * color
+    clamp(&color, 0.0, 1.0) // clamp color to proper range
 }

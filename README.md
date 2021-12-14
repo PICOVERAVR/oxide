@@ -1,10 +1,10 @@
 # oxide
 
-A simple CPU renderer in Rust.  More of a project to get used to Rust than anything especially useful.
+A simple CPU renderer in Rust based on [Computer Graphics from Scratch](https://gabrielgambetta.com/computer-graphics-from-scratch).
 
 ## Features
 - .ppm output
-- basic phong lighting
+- Phong lighting (ambient, diffuse, and specular lighting)
+- Directional, point, and ambient lights
 
-Example output:
-![Example oxide output](output.png)
+Example renders over time are shown in the `outputs` directory.
