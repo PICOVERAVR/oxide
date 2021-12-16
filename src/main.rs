@@ -35,11 +35,12 @@ fn main() -> std::io::Result<()> {
 
     let spheres = vec![
         Sphere { // large sphere to act as ground
-            c: vec![0.0, -5005.0, 0.0],
+            c: vec![0.0, -5001.0, 0.0],
             r: 5000.0,
             mat: Material {
                 color: vec![1.0, 1.0, 1.0],
                 spec: 250.0,
+                refl: 0.8,
             },
         },
         Sphere {
@@ -48,6 +49,7 @@ fn main() -> std::io::Result<()> {
             mat: Material {
                 color: vec![1.0, 0.0, 0.0],
                 spec: 500.0,
+                refl: 0.5,
             },
         },
         Sphere {
@@ -56,6 +58,7 @@ fn main() -> std::io::Result<()> {
             mat: Material {
                 color: vec![0.0, 0.0, 1.0],
                 spec: 500.0,
+                refl: 0.5,
             },
         },
         Sphere {
@@ -64,6 +67,16 @@ fn main() -> std::io::Result<()> {
             mat: Material {
                 color: vec![0.0, 1.0, 0.0],
                 spec: 10.0,
+                refl: 0.5,
+            },
+        },
+        Sphere {
+            c: vec![0.0, 1.0, 8.0],
+            r: 2.0,
+            mat: Material {
+                color: vec![1.0, 1.0, 1.0],
+                spec: -1.0,
+                refl: 0.95,
             },
         },
     ];
@@ -83,14 +96,15 @@ fn main() -> std::io::Result<()> {
         },
     ];
 
-    println!("\nrender dimensions: {} x {}", width, height);
-    print!("rendering... ");
+    // print to stderr so output isn't buffered until the end
+    eprintln!("\nrender dimensions: {} x {}", width, height);
+    eprintln!("rendering... ");
     
     let clock = time::Instant::now();
     let ppm = render(width, height, &spheres, &lights);
     let time = clock.elapsed();
     
-    println!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());
+    eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());
 
     // NOTE: buffer copy here to transform buffer from Vec<Color> to Vec<u8> in a safe way
     let bytes = ppm.mat.len() * 3;

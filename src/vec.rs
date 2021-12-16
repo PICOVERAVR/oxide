@@ -1,12 +1,12 @@
 use std::ops::{Add, Sub, Mul, Div};
 use num_traits::float::Float;
 
+use num::cast::*;
+
 pub fn add<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     where T: Add<Output = T> + Copy
     {
-    assert_eq!(lhs.len(), rhs.len()); // make sure vectors are of the same size
     assert!(!lhs.is_empty());
-    assert!(!rhs.is_empty());
 
     let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
 
@@ -67,7 +67,7 @@ pub fn dot<T>(lhs: &[T], rhs: &[T]) -> T
 
 // normalize a vector
 pub fn norm<T>(v: &[T]) -> Vec<T>
-    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    where T: Float
     {
 
     let mag = dot(v, v).sqrt();
@@ -83,7 +83,7 @@ pub fn norm<T>(v: &[T]) -> Vec<T>
 
 // negate a vector element-wise
 pub fn neg<T>(v: &[T]) -> Vec<T>
-    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    where T: Float
     {
 
     let mut ret: Vec<T> = Vec::with_capacity(v.len());
@@ -97,7 +97,7 @@ pub fn neg<T>(v: &[T]) -> Vec<T>
 
 // clamp all values in a vector to [min, max]
 pub fn clamp<T>(v: &[T], min: T, max: T) -> Vec<T>
-    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    where T: Float
     {
 
     let mut ret: Vec<T> = Vec::with_capacity(v.len());
@@ -118,7 +118,7 @@ pub fn clamp<T>(v: &[T], min: T, max: T) -> Vec<T>
 
 // return minimum of two vectors, element-wise
 pub fn min<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
-    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    where T: Float
     {
     assert_eq!(lhs.len(), rhs.len());
 
@@ -139,7 +139,7 @@ pub fn min<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
 
 // return maximum of two vectors, element wise
 pub fn max<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
-    where T: Mul<Output = T> + Div<Output = T> + Add<Output = T> + Copy + Float
+    where T: Float
     {
 
     let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
@@ -155,4 +155,16 @@ pub fn max<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     }
 
     ret
+}
+
+// returns the reflection of i off a surface with the normal N
+// NOTE: I and N should be pointing in the same direction
+pub fn refl<T>(i: &[T], n: &[T]) -> Vec<T> 
+    where T: Float
+    {
+    assert!(i.len() == n.len());
+    
+    // compute R = 2 * N * dot(N, I) - I
+    let s = dot(n, i) * num::cast(2.0).unwrap();
+    sub(&mul(&vec![s; i.len()], n), i)
 }

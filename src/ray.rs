@@ -1,6 +1,7 @@
 use crate::draw::Color;
 use crate::mat::Matrix;
 use crate::vec::*;
+use crate::render::{closest_hit, any_hit};
 
 // draw a pixel on ppm
 // x and y are coordinates going from -width/2 to width/2 and -height/2 to height/2 respectively
@@ -36,7 +37,8 @@ pub enum HitType {
 #[derive(Clone)]
 pub struct Material {
     pub color: Vec<f32>,
-    pub spec: f32,
+    pub spec: f32, // specular exponent, set to -1 for no specular highlights
+    pub refl: f32, // reflectivity from 0 to 1
 }
 
 // behavior needed to interact with traced rays
@@ -97,20 +99,19 @@ impl RayInteraction for Sphere {
         // constrain t1 and t2 to the range [t.0, t.1] or assign em to be +/- inf
 
         let t1 = match t1 {
-            _small if t1 < t.0 => f32::NEG_INFINITY,
+            _small if t1 <= t.0 => f32::NEG_INFINITY,
             _fit if t.0 < t1 && t1 < t.1 => t1,
-            _large if t1 > t.1 => f32::INFINITY,
+            _large if t1 >= t.1 => f32::INFINITY,
             _ => f32::INFINITY, // handles case where t is NaN
         };
 
         let t2 = match t2 {
-            _small if t2 < t.0 => f32::NEG_INFINITY,
+            _small if t2 <= t.0 => f32::NEG_INFINITY,
             _fit if t.0 < t2 && t2 < t.1 => t2,
-            _large if t2 > t.1 => f32::INFINITY,
+            _large if t2 >= t.1 => f32::INFINITY,
             _ => f32::INFINITY,
         };
 
-        // man, enum variants are cool
         match (t1, t2) {
             _miss if t1.is_infinite() && t2.is_infinite() => HitType::Miss(),
             _edge if !t1.is_infinite() && t2.is_infinite() => HitType::Hit(t1),
@@ -133,30 +134,39 @@ impl RayInteraction for Sphere {
 }
 
 // runs lighting calculations at point p
-pub fn light(obj: &impl RayInteraction, p: &[f32], light: &Light) -> Vec<f32> {
+// num_refl determines maximum recursion depth reflections
+pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &[f32], l: &Light, num_refl: u32) -> Vec<f32> {
 
-    let lc = &light.color;
+    let lc = &l.color;
 
     // calculate vector going _to_ the light source
-    let l = match &light.kind {
+    let lv = match &l.kind {
         LightType::Point(lp) => sub(lp, p),
         LightType::Directional(ldir) => ldir.to_vec(),
         LightType::Ambient => return lc.to_vec(),
     };
 
-    let i = norm(&l);
-    let n = obj.normal(p);
+    let max = match l.kind {
+        LightType::Directional(_) => f32::INFINITY, // no max t for directional lights
+        _ => 0.99, // don't test for shadows beyond the light origin for point lights
+    };
 
     let m = obj.material(p);
+    let mut color = m.color.to_vec();
 
-    // multiply by both the material color and light color, as diffuse light is affected by both
+    // if the ray going to the light hits another object, point p is in shadow
+    // avoid edge case where object hits itself by using a small offset from 0 for t
+    if let Some((_, _)) = closest_hit(&Ray {o: p.to_vec(), d: lv.to_vec()}, objs, (0.01, max)) {
+        return vec![0.0, 0.0, 0.0] // no light contribution if in shadow
+    }
+
+    let i = norm(&lv);
+    let n = obj.normal(p);
+
     let diff = dot(&n, &i).max(0.0);
-    let mut color = mul(&mul(&[diff, diff, diff], &m.color), &light.color);
+    color = mul(&mul(&[diff, diff, diff], &color), &l.color);
 
-    // find reflected ray r off object with equation 2 * N * dot(N, L) - L
-    // N = normal, L = vector going _to_ light source
-    let spec_scalar = 2.0 * dot(&n, &l);
-    let r = sub(&mul(&[spec_scalar, spec_scalar, spec_scalar], &n), &l);
+    let r = refl(&lv, &n); // calculate reflected vector off normal
     
     let np = [-p[0], -p[1], -p[2]]; // negative p, or a vector to the camera
     let spec_dot = dot(&norm(&r), &norm(&np));
@@ -166,6 +176,33 @@ pub fn light(obj: &impl RayInteraction, p: &[f32], light: &Light) -> Vec<f32> {
         let specc = mul(&[spec, spec, spec], lc); // specular color depends on light source
         color = add(&color, &specc);
     }
-    
-    clamp(&color, 0.0, 1.0) // clamp color to proper range
+
+    clamp(&color, 0.0, 1.0); // clamp color to proper range
+
+    if num_refl > 0 && m.refl > 0.0 {
+        let r = refl(&lv, &obj.normal(p));
+        let ref_ray = Ray {
+            o: p.to_vec(),
+            d: r.to_vec(),
+        };
+
+        // if object is reflective and we can recurse more, calculate lighting on reflection
+        if let Some((i2, p2)) = closest_hit(&ref_ray, objs, (0.01, f32::INFINITY)) {
+            let ref_l = Light {
+                color: color.to_vec(),
+                kind: LightType::Point(p.to_vec()),
+            };
+
+            let ref_color = light(&objs[i2], objs, &p2, &ref_l, num_refl - 1);
+
+            // if we reflect off the object and hit something, compute the light for that:
+            // color = color * (1 - refl) + ref_color * refl
+            color = add(
+                &mul(&ref_color, &[m.refl, m.refl, m.refl]),
+                &mul(&color, &[1.0 - m.refl, 1.0 - m.refl, 1.0 - m.refl])
+            );
+        }
+    }
+
+    color
 }

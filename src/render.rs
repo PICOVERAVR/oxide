@@ -3,6 +3,38 @@ use crate::vec::*;
 use crate::mat::*;
 use crate::ray::*;
 
+// iterate through all objects in objs and return the index of the closest object and the hit point
+// (or None if nothing hits)
+pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vec<f32>)> {
+    let mut best_t = f32::INFINITY;
+    let mut best = None;
+
+    for (i, obj) in objs.iter().enumerate() {
+        if let HitType::Hit(t) = obj.hit(r, lim) {
+            let p = add(&r.o, &mul(&[t, t, t], &r.d));
+            if t < best_t {
+                best = Some((i, p));
+                best_t = t;
+            }
+        }
+    }
+
+    best
+}
+
+// iterate through all objects in objs and return the index of the first object to hit and the hit point
+// (or None if nothing hits)
+pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vec<f32>)> {
+    for (i, obj) in objs.iter().enumerate() {
+        if let HitType::Hit(t) = obj.hit(r, lim) {
+            let p = add(&r.o, &mul(&[t, t, t], &r.d));
+            return Some((i, p))
+        }
+    }
+
+    None
+}
+
 pub fn render(width: usize, height: usize, objs: &[impl RayInteraction], lights: &[Light]) -> Matrix<Color> {
     let view_dist = 0.5; // distance from camera to viewport
     let view_width = 1.0; // width of viewport
@@ -13,16 +45,10 @@ pub fn render(width: usize, height: usize, objs: &[impl RayInteraction], lights:
 
     let pixels = width * height + width + height; // adding an extra row and column to make canvas bounds symmetrical
     let mut buf = Matrix {
-        mat: Vec::with_capacity(pixels),
+        mat: vec![Color {r: 255, g: 255, b: 255}; pixels],
         rlen: width as usize,
         clen: height as usize,
     };
-
-    for _y in 0..height+1 {
-        for _x in 0..width+1 {
-            buf.mat.push(Color {r: 255, g: 255, b: 255}); // initialize contents of canvas
-        }
-    }
 
     for y in -hi/2..hi/2 {
         for x in -wi/2..wi/2 {
@@ -42,23 +68,17 @@ pub fn render(width: usize, height: usize, objs: &[impl RayInteraction], lights:
                 d,
             };
 
-            for obj in objs {
-                if let HitType::Hit(t) = obj.hit(&v_ray, (view_dist, 100.0)) {
-
-                    let p = add(&v_ray.o, &mul(&[t, t, t], &v_ray.d)); // compute intersection point
-                    
-                    let mut color_v = vec![0.0, 0.0, 0.0];
-                    for l in lights {
-                        color_v = add(&color_v, &light(obj, &p, l));
-                    }
-
-                    // clamp sum of light colors to correct output range and multiply by surface color
-                    let color_v = mul(&obj.material(&p).color, &clamp(&color_v, 0.0, 1.0));
-
-                    draw_pixel(&mut buf, x, y, map_color(&color_v));
+            if let Some((i, p)) = closest_hit(&v_ray, objs, (view_dist, f32::INFINITY)) {
+                let mut color_v = vec![0.0, 0.0, 0.0];
+                for l in lights {
+                    color_v = add(&color_v, &light(&objs[i], objs, &p, l, 3));
                 }
-            }
 
+                // clamp sum of light colors to correct output range and multiply by surface color
+                let color_v = mul(&objs[i].material(&p).color, &clamp(&color_v, 0.0, 1.0));
+
+                draw_pixel(&mut buf, x, y, map_color(&color_v));
+            }
         }
     }
 
