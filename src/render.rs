@@ -2,6 +2,7 @@ use crate::draw::*;
 use crate::vec::*;
 use crate::mat::*;
 use crate::ray::*;
+use crate::config::MAX_REFLECTIONS;
 
 // iterate through all objects in objs and return the index of the closest object and the hit point
 // (or None if nothing hits)
@@ -71,7 +72,7 @@ pub fn render(width: usize, height: usize, objs: &[impl RayInteraction], lights:
             if let Some((i, p)) = closest_hit(&v_ray, objs, (view_dist, f32::INFINITY)) {
                 let mut color_v = vec![0.0, 0.0, 0.0];
                 for l in lights {
-                    color_v = add(&color_v, &light(&objs[i], objs, &p, l, 3));
+                    color_v = add(&color_v, &light(&objs[i], objs, &p, l, MAX_REFLECTIONS));
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color

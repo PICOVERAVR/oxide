@@ -19,16 +19,15 @@ use ray::*;
 mod render;
 use render::*;
 
+mod config;
+
 use std::fs::File;
 use std::io::Write;
 use std::time;
 
 fn main() -> std::io::Result<()> {
-    let width = 1200usize;
-    let height = 800usize;
-    let bits = 8;
 
-    let header = format!("P6 {} {} {}\n", width, height, 2u32.pow(bits) - 1);
+    let header = format!("P6 {} {} {}\n", config::WIDTH, config::HEIGHT, 2u32.pow(config::BITS) - 1);
     
     let mut file = File::create("output.ppm")?; // "?" unpacks the result if Ok and returns the error if not
     file.write_all(header.as_bytes())?;
@@ -97,11 +96,11 @@ fn main() -> std::io::Result<()> {
     ];
 
     // print to stderr so output isn't buffered until the end
-    eprintln!("\nrender dimensions: {} x {}", width, height);
+    eprintln!("\nrender dimensions: {} x {}", config::WIDTH, config::HEIGHT);
     eprintln!("rendering... ");
     
     let clock = time::Instant::now();
-    let ppm = render(width, height, &spheres, &lights);
+    let ppm = render(config::WIDTH, config::HEIGHT, &spheres, &lights);
     let time = clock.elapsed();
     
     eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());
