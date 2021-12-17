@@ -8,7 +8,7 @@ use vec::*;
 
 mod mat;
 mod mat_test;
-use mat::Matrix;
+use mat::*;
 
 mod draw;
 use draw::*;
@@ -100,22 +100,37 @@ fn main() -> std::io::Result<()> {
     eprintln!("rendering... ");
     
     let clock = time::Instant::now();
-    let ppm = render(config::WIDTH, config::HEIGHT, &spheres, &lights);
+    let m1 = render((0, 0), (config::WIDTH, config::HEIGHT/2), &spheres, &lights);
+    let m2 = render((0, 0), (config::WIDTH, config::HEIGHT/2), &spheres, &lights);
     let time = clock.elapsed();
     
-    eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());
+    eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());    
 
-    // NOTE: buffer copy here to transform buffer from Vec<Color> to Vec<u8> in a safe way
-    let bytes = ppm.mat.len() * 3;
-    let mut ppm_bytes: Vec<u8> = Vec::with_capacity(bytes);
+    fn get_bytes(m: Matrix<Color>) -> Vec<u8> {
+        let size = (m.rlen - 1) * (m.clen - 1) * 3;
+        let mut buf: Vec<u8> = Vec::with_capacity(size);
 
-    for pixel in ppm.mat {
-        ppm_bytes.push(pixel.r);
-        ppm_bytes.push(pixel.g);
-        ppm_bytes.push(pixel.b);
+        for y in 1..m.clen {
+            for x in 0..m.rlen - 1 {
+                let idx = x + y * config::WIDTH;
+    
+                let c = m.mat[idx];
+    
+                buf.push(c.r);
+                buf.push(c.g);
+                buf.push(c.b);
+            }
+        }
+
+        buf
     }
 
-    file.write_all(&ppm_bytes)?;
+    let mut bvec = get_bytes(m1);
+    bvec.append(&mut get_bytes(m2));
+
+    assert_eq!(bvec.len(), config::WIDTH * config::HEIGHT * 3);
+
+    file.write_all(&bvec)?;
 
     Ok(())
 }

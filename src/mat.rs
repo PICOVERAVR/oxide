@@ -1,5 +1,5 @@
-use std::ops::Mul;
-use std::ops::Add;
+use std::ops::{Mul, Add};
+use num_traits::float::Float;
 
 use crate::vec::dot;
 
@@ -9,6 +9,7 @@ use crate::vec::dot;
 // [ 6 7 8 ]
 //   ^ col
 
+#[derive(Debug)]
 pub struct Matrix<T> {
     pub mat: Vec<T>,
     pub rlen: usize,
@@ -52,7 +53,7 @@ pub fn row<T>(m: &Matrix<T>, n: usize) -> Vec<T>
 
 // multiply two matrices inefficiently
 pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> 
-    where T: Copy + Mul<Output = T> + Add<Output = T>
+    where T: Float
     {
     let mut ret = Matrix {
         mat: Vec::with_capacity(lhs.clen * rhs.rlen),
@@ -69,4 +70,20 @@ pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>
     }
 
     ret
+}
+
+// append the contents of matrix app to the vector v
+// excluding the first cut.0 rows and the last cut.1 columns
+pub fn cut<T>(app: &Matrix<T>, cut: (usize, usize)) -> Vec<T> 
+    where T: Copy {
+    let mut v = vec![];
+
+    for y in cut.0..app.clen {
+        for x in 0..app.rlen - cut.1 {
+            let idx = x + y * app.clen;
+            v.push(app.mat[idx]);
+        }
+    }
+
+    v
 }

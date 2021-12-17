@@ -28,10 +28,10 @@ mod tests {
 
     #[test]
     fn dot_test() {
-        let v1 = vec![1, 2, 3, 4, 5];
-        let v2 = vec![5, 4, 3, 2, 1];
+        let v1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        let v2 = vec![5.0, 4.0, 3.0, 2.0, 1.0];
 
-        assert_eq!(dot(&v1, &v2), 35);
+        assert_eq!(dot(&v1, &v2), 35.0);
     }
 
     #[test]

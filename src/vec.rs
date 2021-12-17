@@ -6,63 +6,29 @@ use num::cast::*;
 pub fn add<T>(lhs: &[T], rhs: &[T]) -> Vec<T>
     where T: Add<Output = T> + Copy
     {
-    assert!(!lhs.is_empty());
-
-    let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
-
-    for (i, &x) in lhs.iter().enumerate() {
-        ret.push(x + rhs[i]);
-    }
-
-    ret
+    lhs.iter().zip(rhs.iter()).map(|(&x, &y)| x + y).collect()
 }
 
 pub fn sub<T>(lhs: &[T], rhs: &[T]) -> Vec<T> 
     where T: Sub<Output = T> + Copy
     {
-    assert_eq!(lhs.len(), rhs.len());
-    assert!(!lhs.is_empty());
-    assert!(!rhs.is_empty());
-
-    let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
-
-    for (i, &x) in lhs.iter().enumerate() {
-        ret.push(x - rhs[i]);
-    }
-
-    ret
+    lhs.iter().zip(rhs.iter()).map(|(&x, &y)| x - y).collect()
 }
 
 pub fn mul<T>(lhs: &[T], rhs: &[T]) -> Vec<T> 
     where T: Mul<Output = T> + Copy
     {
-    assert_eq!(lhs.len(), rhs.len());
-    assert!(!lhs.is_empty());
-    assert!(!rhs.is_empty());
-
-    let mut ret: Vec<T> = Vec::with_capacity(lhs.len());
-
-    for (i, &x) in lhs.iter().enumerate() {
-        ret.push(x * rhs[i]);
-    }
-
-    ret
+    lhs.iter().zip(rhs.iter()).map(|(&x, &y)| x * y).collect()
 }
 
 pub fn dot<T>(lhs: &[T], rhs: &[T]) -> T
-    where T: Mul<Output = T> + Add<Output = T> + Copy
+    where T: Float
     {
-    assert_eq!(lhs.len(), rhs.len());
-    assert!(lhs.len() >= 2);
-    assert!(rhs.len() >= 2);
+    
+    let mut sum = num::cast(0).unwrap();
+    lhs.iter().zip(rhs.iter()).for_each(|(&l, &r)| sum = sum + l * r);
 
-    let mut ret = lhs[0] * rhs[0]; // init with first element
-
-    for (i, &x) in lhs[1..].iter().enumerate() { // add rest of elements
-        ret = ret + x * rhs[i + 1];
-    }
-
-    ret
+    sum
 }
 
 // normalize a vector
@@ -72,27 +38,15 @@ pub fn norm<T>(v: &[T]) -> Vec<T>
 
     let mag = dot(v, v).sqrt();
 
-    let mut ret: Vec<T> = Vec::with_capacity(v.len());
-
-    for x in v {
-        ret.push(*x / mag);
-    }
-
-    ret
+    v.iter().map(|&x| x / mag).collect()
 }
 
 // negate a vector element-wise
 pub fn neg<T>(v: &[T]) -> Vec<T>
     where T: Float
     {
-
-    let mut ret: Vec<T> = Vec::with_capacity(v.len());
-
-    for x in v {
-        ret.push(-*x);
-    }
-
-    ret
+    
+    v.iter().map(|&x| -x).collect()
 }
 
 // clamp all values in a vector to [min, max]

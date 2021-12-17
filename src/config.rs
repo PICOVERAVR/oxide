@@ -1,6 +1,6 @@
 // output options
-pub const WIDTH: usize = 1200;
-pub const HEIGHT: usize = 800;
+pub const WIDTH: usize = 320;
+pub const HEIGHT: usize = 240;
 pub const BITS: u32 = 8;
 
 // render options

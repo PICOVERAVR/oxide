@@ -1,16 +1,6 @@
 use crate::draw::Color;
-use crate::mat::Matrix;
 use crate::vec::*;
 use crate::render::{closest_hit, any_hit};
-
-// draw a pixel on ppm
-// x and y are coordinates going from -width/2 to width/2 and -height/2 to height/2 respectively
-pub fn draw_pixel(ppm: &mut Matrix<Color>, x: i32, y: i32, color: Color) {
-    let ax = x + ppm.rlen as i32 / 2;
-    let ay = ppm.clen as i32 / 2 - y; // y direction needs to be flipped because the canvas y direction goes top to bottom
-
-    ppm.mat[ay as usize * ppm.rlen + ax as usize] = color;
-}
 
 pub enum LightType {
     Point(Vec<f32>), // holds the position of the light

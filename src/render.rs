@@ -36,29 +36,33 @@ pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option
     None
 }
 
-pub fn render(width: usize, height: usize, objs: &[impl RayInteraction], lights: &[Light]) -> Matrix<Color> {
+pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteraction], lights: &[Light]) -> Matrix<Color> {
     let view_dist = 0.5; // distance from camera to viewport
     let view_width = 1.0; // width of viewport
-    let view_height = 1.0 * height as f32 / width as f32; // height of viewport, transformed to make the viewport square regardless of the output dimensions
+    let view_height = 1.0 * dims.1 as f32 / dims.0 as f32; // height of viewport, transformed to make the viewport square regardless of the output dimensions
 
-    let wi = width as i32;
-    let hi = height as i32;
+    let di = (dims.0 as i32, dims.1 as i32);
 
-    let pixels = width * height + width + height; // adding an extra row and column to make canvas bounds symmetrical
+    // adding an extra row and column to make canvas bounds symmetrical
+    let pixels = dims.0 * dims.1 + dims.0 + dims.1 - 1;
     let mut buf = Matrix {
         mat: vec![Color {r: 255, g: 255, b: 255}; pixels],
-        rlen: width as usize,
-        clen: height as usize,
+        rlen: dims.0 as usize + 1, // write increased bounds to matrix dimensions as well, since we don't use it here
+        clen: dims.1 as usize + 1,
     };
 
-    for y in -hi/2..hi/2 {
-        for x in -wi/2..wi/2 {
+    for y in -di.1/2..di.1/2 {
+        for x in -di.0/2..di.0/2 {
             let xf = x as f32;
             let yf = y as f32;
 
             // transform canvas coordinates to viewport coordinates
             // note that the viewport axis and scale is the same of the canvas, so the transform is just a scaling op
-            let view_coord = vec![xf * view_width / width as f32, yf * view_height / height as f32, view_dist];
+            let view_coord = vec![
+                (xf + start.0 as f32) * view_width / dims.0 as f32,
+                (yf - start.1 as f32) * view_height / dims.1 as f32,
+                view_dist
+            ];
 
             // determine color seen by viewport square
 
@@ -78,7 +82,7 @@ pub fn render(width: usize, height: usize, objs: &[impl RayInteraction], lights:
                 // clamp sum of light colors to correct output range and multiply by surface color
                 let color_v = mul(&objs[i].material(&p).color, &clamp(&color_v, 0.0, 1.0));
 
-                draw_pixel(&mut buf, x, y, map_color(&color_v));
+                draw_pixel(&mut buf, (x, y), dims, map_color(&color_v));
             }
         }
     }
