@@ -100,8 +100,8 @@ fn main() -> std::io::Result<()> {
     eprintln!("rendering... ");
     
     let clock = time::Instant::now();
-    let m1 = render((0, 0), (config::WIDTH, config::HEIGHT/2), &spheres, &lights);
-    let m2 = render((0, 0), (config::WIDTH, config::HEIGHT/2), &spheres, &lights);
+    let m1 = render((0, 0), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
+    let m2 = render((0, 0), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
     let time = clock.elapsed();
     
     eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());    
@@ -112,7 +112,7 @@ fn main() -> std::io::Result<()> {
 
         for y in 1..m.clen {
             for x in 0..m.rlen - 1 {
-                let idx = x + y * config::WIDTH;
+                let idx = x + y * (m.rlen - 1);
     
                 let c = m.mat[idx];
     
@@ -125,6 +125,7 @@ fn main() -> std::io::Result<()> {
         buf
     }
 
+    // TODO: the append trick doesn't work when the width is split up
     let mut bvec = get_bytes(m1);
     bvec.append(&mut get_bytes(m2));
 

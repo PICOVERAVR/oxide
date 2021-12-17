@@ -44,7 +44,7 @@ pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteracti
     let di = (dims.0 as i32, dims.1 as i32);
 
     // adding an extra row and column to make canvas bounds symmetrical
-    let pixels = dims.0 * dims.1 + dims.0 + dims.1 - 1;
+    let pixels = dims.0 * dims.1 + dims.0 + dims.1 + 1;
     let mut buf = Matrix {
         mat: vec![Color {r: 255, g: 255, b: 255}; pixels],
         rlen: dims.0 as usize + 1, // write increased bounds to matrix dimensions as well, since we don't use it here
