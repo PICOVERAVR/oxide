@@ -80,8 +80,7 @@ pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteracti
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color
-                let color_v = mul(&objs[i].material(&p).color, &clamp(&color_v, 0.0, 1.0));
-
+                let color_v = clamp(&mul(&objs[i].material(&p).color, &color_v), 0.0, 1.0);
                 draw_pixel(&mut buf, (x, y), dims, map_color(&color_v));
             }
         }

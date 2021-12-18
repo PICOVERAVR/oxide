@@ -123,7 +123,7 @@ impl RayInteraction for Sphere {
     }
 }
 
-// runs lighting calculations at point p
+// runs lighting calculations at point p for object obj
 // num_refl determines maximum recursion depth reflections
 pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &[f32], l: &Light, num_refl: u32) -> Vec<f32> {
 
@@ -146,7 +146,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &[f32],
 
     // if the ray going to the light hits another object, point p is in shadow
     // avoid edge case where object hits itself by using a small offset from 0 for t
-    if let Some((_, _)) = closest_hit(&Ray {o: p.to_vec(), d: lv.to_vec()}, objs, (0.01, max)) {
+    if let Some((_, _)) = any_hit(&Ray {o: p.to_vec(), d: lv.to_vec()}, objs, (0.01, max)) {
         return vec![0.0, 0.0, 0.0] // no light contribution if in shadow
     }
 
@@ -158,7 +158,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &[f32],
 
     let r = refl(&lv, &n); // calculate reflected vector off normal
     
-    let np = [-p[0], -p[1], -p[2]]; // negative p, or a vector to the camera
+    let np = neg(p); // negative p, or a vector to the camera
     let spec_dot = dot(&norm(&r), &norm(&np));
     if m.spec > 0.0 && spec_dot > 0.0 {
         // diff * color + spec

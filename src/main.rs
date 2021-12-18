@@ -24,6 +24,7 @@ mod config;
 use std::fs::File;
 use std::io::Write;
 use std::time;
+use std::thread;
 
 fn main() -> std::io::Result<()> {
 
@@ -99,9 +100,10 @@ fn main() -> std::io::Result<()> {
     eprintln!("\nrender dimensions: {} x {}", config::WIDTH, config::HEIGHT);
     eprintln!("rendering... ");
     
+    // TODO: need to read concurrency chapter and come back to threading this
     let clock = time::Instant::now();
-    let m1 = render((0, 0), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
-    let m2 = render((0, 0), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
+    let m1 = render((0, -(config::HEIGHT as i32) / 4), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
+    let m2 = render((0, (config::HEIGHT as i32) / 4), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
     let time = clock.elapsed();
     
     eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());    
