@@ -45,17 +45,15 @@ pub trait RayInteraction {
 
 // an infinite plane with a given normal
 pub struct Plane {
+    pub p: Vec<f32>,
     pub n: Vec<f32>,
     pub mat: Material,
 }
 
 impl RayInteraction for Plane {
     fn hit(&self, r: &Ray, _t: (f32, f32)) -> HitType {
-        if dot(&norm(&neg(&self.n)), &norm(&r.d)) > 0.0 {
-            return HitType::Hit(0.0) // TODO
-        }
-
-        HitType::Miss()
+        let t = dot(&self.n, &sub(&self.p, &r.o)) / dot(&self.n, &r.d);
+        HitType::Hit(t)
     }
 
     fn normal(&self, _p: &[f32]) -> Vec<f32> {

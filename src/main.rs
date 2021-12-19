@@ -99,11 +99,34 @@ fn main() -> std::io::Result<()> {
     // print to stderr so output isn't buffered until the end
     eprintln!("\nrender dimensions: {} x {}", config::WIDTH, config::HEIGHT);
     eprintln!("rendering... ");
+
+    // split the render into vertical slices and divide amongst threads
+    // (horizontal slices are harder to collapse together)
+
+    // TODO: come back to threading after learning about Arc<T>?
+    // since the closure we pass to thread::spawn has static lifetime
+
+    let mut m_parts = vec![];
+
+    let dt = (config::HEIGHT / config::THREADS) as i32;
+    let start = -(config::HEIGHT as i32) / 2 + dt / 2;
     
-    // TODO: need to read concurrency chapter and come back to threading this
     let clock = time::Instant::now();
-    let m1 = render((0, -(config::HEIGHT as i32) / 4), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
-    let m2 = render((0, (config::HEIGHT as i32) / 4), (config::WIDTH, config::HEIGHT / 2), &spheres, &lights);
+
+    m_parts.push(render(
+        (0, start),
+        (config::WIDTH, dt as usize),
+        &spheres,
+        &lights
+    ));
+
+    m_parts.push(render(
+        (0, start + dt),
+        (config::WIDTH, dt as usize),
+        &spheres,
+        &lights
+    ));
+
     let time = clock.elapsed();
     
     eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());    
@@ -127,9 +150,11 @@ fn main() -> std::io::Result<()> {
         buf
     }
 
-    // TODO: the append trick doesn't work when the width is split up
-    let mut bvec = get_bytes(m1);
-    bvec.append(&mut get_bytes(m2));
+    let mut bvec = vec![];
+
+    for m in m_parts {
+        bvec.append(&mut get_bytes(m));
+    }
 
     assert_eq!(bvec.len(), config::WIDTH * config::HEIGHT * 3);
 

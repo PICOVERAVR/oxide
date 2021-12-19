@@ -6,5 +6,6 @@ A simple CPU renderer in Rust based on [Computer Graphics from Scratch](https://
 - .ppm output
 - Phong lighting (ambient, diffuse, and specular lighting)
 - Directional, point, and ambient lights
+- Reflections of arbitrary depth
 
 Example renders over time are shown in the `outputs` directory.

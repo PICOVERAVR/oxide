@@ -6,3 +6,4 @@ pub const BITS: u32 = 8; // number of bits per pixel, values besides 8 are unsup
 
 // render options
 pub const MAX_REFLECTIONS: u32 = 3; // maximum number of reflections off an object
+pub const THREADS: usize = 2;
