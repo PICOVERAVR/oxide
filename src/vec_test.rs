@@ -4,47 +4,47 @@ mod tests {
 
     #[test]
     fn add_test() {
-        let v1 = vec![1, 2, 3, 4, 5];
-        let v2 = vec![6, 7, 8, 9, 10];
+        let v1 = Vector::new_v([1.0, 2.0, 3.0, 4.0], 4);
+        let v2 = Vector::new_v([6.0, 7.0, 8.0, 9.0], 4);
 
-        assert_eq!(add(&v1, &v2), vec![7, 9, 11, 13, 15]);
+        assert_eq!(v1 + v2, Vector::new_v([7.0, 9.0, 11.0, 13.0], 4));
     }
 
     #[test]
     fn sub_test() {
-        let v1 = vec![1, 2, 3, 4, 5];
-        let v2 = vec![6, 7, 8, 9, 10];
+        let v1 = Vector::new_v([1.0, 2.0, 3.0, 4.0], 4);
+        let v2 = Vector::new_v([6.0, 7.0, 8.0, 9.0], 4);
 
-        assert_eq!(sub(&v1, &v2), vec![-5, -5, -5, -5, -5]);
+        assert_eq!(v1 - v2, Vector::new_v([-5.0, -5.0, -5.0, -5.0], 4));
     }
 
     #[test]
     fn mul_test() {
-        let v1 = vec![1, 2, 3, 4, 5];
-        let v2 = vec![6, 7, 8, 9, 10];
+        let v1 = Vector::new_v([1.0, 2.0, 3.0, 4.0], 4);
+        let v2 = Vector::new_v([6.0, 7.0, 8.0, 9.0], 4);
 
-        assert_eq!(mul(&v1, &v2), vec![6, 14, 24, 36, 50]);
+        assert_eq!(v1 * v2, Vector::new_v([6.0, 14.0, 24.0, 36.0], 4));
     }
 
     #[test]
     fn dot_test() {
-        let v1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        let v2 = vec![5.0, 4.0, 3.0, 2.0, 1.0];
+        let v1 = Vector::new_v([1.0, 2.0, 3.0, 4.0], 4);
+        let v2 = Vector::new_v([5.0, 4.0, 3.0, 2.0], 4);
 
-        assert_eq!(dot(&v1, &v2), 35.0);
+        assert_eq!(v1.dot(v2), 30.0);
     }
 
     #[test]
     fn norm_test() {
-        let v = vec![5.0, 0.0, 0.0, 0.0];
+        let v = Vector::new_v([5.0, 0.0, 0.0, 0.0], 4);
 
-        assert_eq!(norm(&v), vec![1.0, 0.0, 0.0, 0.0]);
+        assert_eq!(v.norm(), Vector::new_v([1.0, 0.0, 0.0, 0.0], 4));
     }
 
     #[test]
     fn clamp_test() {
-        let v = vec![-5.0, -1.0, 0.0, 1.0, 5.0];
+        let v = Vector::new_v([-5.0, -1.0, 1.0, 5.0], 4);
 
-        assert_eq!(clamp(&v, -1.0, 1.0), vec![-1.0, -1.0, 0.0, 1.0, 1.0]);
+        assert_eq!(v.clamp(-1.0, 1.0), Vector::new_v([-1.0, -1.0, 1.0, 1.0], 4));
     }
 }

@@ -1,4 +1,5 @@
 use crate::mat::Matrix;
+use crate::vec::*;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
@@ -19,11 +20,11 @@ pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), len: (usize, usize
 }
 
 // maps a float vector to a concrete color type
-pub fn map_color(v: &[f32]) -> Color {
+pub fn map_color(c: Vector) -> Color {
     Color {
-        r: (v[0] * u8::max_value() as f32) as u8,
-        g: (v[1] * u8::max_value() as f32) as u8,
-        b: (v[2] * u8::max_value() as f32) as u8,
+        r: (c.v[0] * u8::max_value() as f32) as u8,
+        g: (c.v[1] * u8::max_value() as f32) as u8,
+        b: (c.v[2] * u8::max_value() as f32) as u8,
     }
 }
 

@@ -37,6 +37,7 @@ mod tests {
         assert_eq!(col(&m1, 3), vec![4, 8, 12, 16]);
     }
 
+    /*
     #[test]
     fn matmul_test() {
         let m1 = Matrix {
@@ -76,6 +77,7 @@ mod tests {
         assert_eq!(m_exp.clen, m3.clen);
         assert_eq!(m_exp.mat, m3.mat);
     }
+    */
 
     #[test]
     fn cut_test() {

@@ -20,6 +20,7 @@ mod render;
 use render::*;
 
 mod config;
+use config::*;
 
 use std::fs::File;
 use std::io::Write;
@@ -28,53 +29,53 @@ use std::thread;
 
 fn main() -> std::io::Result<()> {
 
-    let header = format!("P6 {} {} {}\n", config::WIDTH, config::HEIGHT, 2u32.pow(config::BITS) - 1);
+    let header = format!("P6 {} {} {}\n", WIDTH, HEIGHT, 2u32.pow(BITS) - 1);
     
     let mut file = File::create("output.ppm")?; // "?" unpacks the result if Ok and returns the error if not
     file.write_all(header.as_bytes())?;
 
     let spheres = vec![
         Sphere { // large sphere to act as ground
-            c: vec![0.0, -5001.0, 0.0],
+            c: Vector::new_v3([0.0, -5001.0, 0.0]),
             r: 5000.0,
             mat: Material {
-                color: vec![1.0, 1.0, 1.0],
+                color: Vector::new_v3([1.0, 1.0, 1.0]),
                 spec: 250.0,
                 refl: 0.8,
             },
         },
         Sphere {
-            c: vec![0.0, -1.0, 3.0],
+            c: Vector::new_v3([0.0, -1.0, 3.0]),
             r: 1.0,
             mat: Material {
-                color: vec![1.0, 0.0, 0.0],
+                color: Vector::new_v3([1.0, 0.0, 0.0]),
                 spec: 500.0,
                 refl: 0.5,
             },
         },
         Sphere {
-            c: vec![2.0, 0.0, 4.0],
+            c: Vector::new_v3([2.0, 0.0, 4.0]),
             r: 1.0,
             mat: Material {
-                color: vec![0.0, 0.0, 1.0],
+                color: Vector::new_v3([0.0, 0.0, 1.0]),
                 spec: 500.0,
                 refl: 0.5,
             },
         },
         Sphere {
-            c: vec![-2.0, 0.0, 4.0],
+            c: Vector::new_v3([-2.0, 0.0, 4.0]),
             r: 1.0,
             mat: Material {
-                color: vec![0.0, 1.0, 0.0],
+                color: Vector::new_v3([0.0, 1.0, 0.0]),
                 spec: 10.0,
                 refl: 0.5,
             },
         },
         Sphere {
-            c: vec![0.0, 1.0, 8.0],
+            c: Vector::new_v3([0.0, 1.0, 8.0]),
             r: 2.0,
             mat: Material {
-                color: vec![1.0, 1.0, 1.0],
+                color: Vector::new_v3([1.0, 1.0, 1.0]),
                 spec: -1.0,
                 refl: 0.95,
             },
@@ -83,21 +84,21 @@ fn main() -> std::io::Result<()> {
 
     let lights = vec![
         Light {
-            color: vec![0.2, 0.2, 0.2],
+            color: Vector::new_v3([0.2, 0.2, 0.2]),
             kind: LightType::Ambient,
         },
         Light {
-            color: vec![0.6, 0.6, 0.6],
-            kind: LightType::Point(vec![2.0, 1.0, 0.0]),
+            color: Vector::new_v3([0.6, 0.6, 0.6]),
+            kind: LightType::Point(Vector::new_v3([2.0, 1.0, 0.0])),
         },
         Light {
-            color: vec![0.2, 0.2, 0.2],
-            kind: LightType::Directional(vec![1.0, 4.0, 4.0]),
+            color: Vector::new_v3([0.2, 0.2, 0.2]),
+            kind: LightType::Directional(Vector::new_v3([1.0, 4.0, 4.0])),
         },
     ];
 
     // print to stderr so output isn't buffered until the end
-    eprintln!("\nrender dimensions: {} x {}", config::WIDTH, config::HEIGHT);
+    eprintln!("\nrender dimensions: {} x {}", WIDTH, HEIGHT);
     eprintln!("rendering... ");
 
     // split the render into vertical slices and divide amongst threads
@@ -108,21 +109,21 @@ fn main() -> std::io::Result<()> {
 
     let mut m_parts = vec![];
 
-    let dt = (config::HEIGHT / config::THREADS) as i32;
-    let start = -(config::HEIGHT as i32) / 2 + dt / 2;
+    let dt = (HEIGHT / THREADS) as i32;
+    let start = -(HEIGHT as i32) / 2 + dt / 2;
     
     let clock = time::Instant::now();
 
     m_parts.push(render(
         (0, start),
-        (config::WIDTH, dt as usize),
+        (WIDTH, dt as usize),
         &spheres,
         &lights
     ));
 
     m_parts.push(render(
         (0, start + dt),
-        (config::WIDTH, dt as usize),
+        (WIDTH, dt as usize),
         &spheres,
         &lights
     ));
@@ -156,7 +157,7 @@ fn main() -> std::io::Result<()> {
         bvec.append(&mut get_bytes(m));
     }
 
-    assert_eq!(bvec.len(), config::WIDTH * config::HEIGHT * 3);
+    assert_eq!(bvec.len(), WIDTH * HEIGHT * 3);
 
     file.write_all(&bvec)?;
 

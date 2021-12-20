@@ -2,17 +2,17 @@ use crate::draw::*;
 use crate::vec::*;
 use crate::mat::*;
 use crate::ray::*;
-use crate::config::MAX_REFLECTIONS;
+use crate::config::*;
 
 // iterate through all objects in objs and return the index of the closest object and the hit point
 // (or None if nothing hits)
-pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vec<f32>)> {
+pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
     let mut best_t = f32::INFINITY;
     let mut best = None;
 
     for (i, obj) in objs.iter().enumerate() {
         if let HitType::Hit(t) = obj.hit(r, lim) {
-            let p = add(&r.o, &mul(&[t, t, t], &r.d));
+            let p = r.o + Vector::new_s(t, 3) * r.d;
             if t < best_t {
                 best = Some((i, p));
                 best_t = t;
@@ -25,10 +25,10 @@ pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Op
 
 // iterate through all objects in objs and return the index of the first object to hit and the hit point
 // (or None if nothing hits)
-pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vec<f32>)> {
+pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
     for (i, obj) in objs.iter().enumerate() {
         if let HitType::Hit(t) = obj.hit(r, lim) {
-            let p = add(&r.o, &mul(&[t, t, t], &r.d));
+            let p = r.o + Vector::new_s(t, 3) * r.d;
             return Some((i, p))
         }
     }
@@ -58,30 +58,29 @@ pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteracti
 
             // transform canvas coordinates to viewport coordinates
             // note that the viewport axis and scale is the same of the canvas, so the transform is just a scaling op
-            let view_coord = vec![
-                (xf + start.0 as f32) * view_width / dims.0 as f32,
-                (yf - start.1 as f32) * view_height / dims.1 as f32,
-                view_dist
-            ];
-
-            // determine color seen by viewport square
-
-            let d = norm(&view_coord);
-
+            let view_coord = Vector::new_v3(
+                [
+                    (xf + start.0 as f32) * view_width / dims.0 as f32,
+                    (yf - start.1 as f32) * view_height / dims.1 as f32,
+                    view_dist,
+                ],
+            );
+            
+            // create ray coming off viewport
             let v_ray = Ray {
-                o: view_coord,
-                d,
+                o: Vector::new_v3(CAM_POS),
+                d: view_coord, // can adjust rotation by multiplying by rotation matrix here
             };
 
             if let Some((i, p)) = closest_hit(&v_ray, objs, (view_dist, f32::INFINITY)) {
-                let mut color_v = vec![0.0, 0.0, 0.0];
+                let mut color_v = Vector::zero(3);
                 for l in lights {
-                    color_v = add(&color_v, &light(&objs[i], objs, &p, l, MAX_REFLECTIONS));
+                    color_v = color_v + light(&objs[i], objs, &p, l, MAX_REFLECTIONS);
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color
-                let color_v = clamp(&mul(&objs[i].material(&p).color, &color_v), 0.0, 1.0);
-                draw_pixel(&mut buf, (x, y), dims, map_color(&color_v));
+                let color_v = (objs[i].material(&p).color * color_v).clamp(0.0, 1.0);
+                draw_pixel(&mut buf, (x, y), dims, map_color(color_v));
             }
         }
     }
