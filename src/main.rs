@@ -36,46 +36,46 @@ fn main() -> std::io::Result<()> {
 
     let spheres = vec![
         Sphere { // large sphere to act as ground
-            c: Vector::new_v3([0.0, -5001.0, 0.0]),
+            c: Vector::from_3(0.0, -5001.0, 0.0),
             r: 5000.0,
             mat: Material {
-                color: Vector::new_v3([1.0, 1.0, 1.0]),
+                color: Vector::from_3(1.0, 1.0, 1.0),
                 spec: 250.0,
                 refl: 0.8,
             },
         },
         Sphere {
-            c: Vector::new_v3([0.0, -1.0, 3.0]),
+            c: Vector::from_3(0.0, -1.0, 3.0),
             r: 1.0,
             mat: Material {
-                color: Vector::new_v3([1.0, 0.0, 0.0]),
+                color: Vector::from_3(1.0, 0.0, 0.0),
                 spec: 500.0,
                 refl: 0.5,
             },
         },
         Sphere {
-            c: Vector::new_v3([2.0, 0.0, 4.0]),
+            c: Vector::from_3(2.0, 0.0, 4.0),
             r: 1.0,
             mat: Material {
-                color: Vector::new_v3([0.0, 0.0, 1.0]),
+                color: Vector::from_3(0.0, 0.0, 1.0),
                 spec: 500.0,
                 refl: 0.5,
             },
         },
         Sphere {
-            c: Vector::new_v3([-2.0, 0.0, 4.0]),
+            c: Vector::from_3(-2.0, 0.0, 4.0),
             r: 1.0,
             mat: Material {
-                color: Vector::new_v3([0.0, 1.0, 0.0]),
+                color: Vector::from_3(0.0, 1.0, 0.0),
                 spec: 10.0,
                 refl: 0.5,
             },
         },
         Sphere {
-            c: Vector::new_v3([0.0, 1.0, 8.0]),
+            c: Vector::from_3(0.0, 1.0, 8.0),
             r: 2.0,
             mat: Material {
-                color: Vector::new_v3([1.0, 1.0, 1.0]),
+                color: Vector::from_3(1.0, 1.0, 1.0),
                 spec: -1.0,
                 refl: 0.95,
             },
@@ -84,16 +84,16 @@ fn main() -> std::io::Result<()> {
 
     let lights = vec![
         Light {
-            color: Vector::new_v3([0.2, 0.2, 0.2]),
+            color: Vector::from_3(0.2, 0.2, 0.2),
             kind: LightType::Ambient,
         },
         Light {
-            color: Vector::new_v3([0.6, 0.6, 0.6]),
-            kind: LightType::Point(Vector::new_v3([2.0, 1.0, 0.0])),
+            color: Vector::from_3(0.6, 0.6, 0.6),
+            kind: LightType::Point(Vector::from_3(2.0, 1.0, 0.0)),
         },
         Light {
-            color: Vector::new_v3([0.2, 0.2, 0.2]),
-            kind: LightType::Directional(Vector::new_v3([1.0, 4.0, 4.0])),
+            color: Vector::from_3(0.2, 0.2, 0.2),
+            kind: LightType::Directional(Vector::from_3(1.0, 4.0, 4.0)),
         },
     ];
 

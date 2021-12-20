@@ -152,7 +152,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
     let n = obj.normal(p);
 
     let diff = n.dot(i).max(0.0);
-    let diff_v = Vector::new_s(diff, 3);
+    let diff_v = Vector::from_s(diff, 3);
     color = diff_v * color * l.color;
 
     let r = refl(lv, n); // calculate reflected vector off normal
@@ -161,7 +161,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
     let spec_dot = r.norm().dot(np.norm());
     if m.spec > 0.0 && spec_dot > 0.0 {
         // diff * color + spec
-        let spec_v = Vector::new_s(spec_dot.powf(m.spec), 3);
+        let spec_v = Vector::from_s(spec_dot.powf(m.spec), 3);
         let specc = spec_v * lc; // specular color depends on light source
         color = color + specc;
     }
@@ -186,7 +186,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
 
             // if we reflect off the object and hit something, compute the light for that:
             // color = color * (1 - refl) + ref_color * refl
-            color = ref_color * Vector::new_s(m.refl, 3) + color * Vector::new_s(1.0 - m.refl, 3);
+            color = ref_color * Vector::from_s(m.refl, 3) + color * Vector::from_s(1.0 - m.refl, 3);
         }
     }
 

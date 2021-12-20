@@ -9,4 +9,4 @@ pub const MAX_REFLECTIONS: u32 = 3; // maximum number of reflections off an obje
 pub const THREADS: usize = 2;
 
 // scene options
-pub const CAM_POS: [f32; 3] = [0.0, 0.0, 0.0];
+pub const CAM_POS: (f32, f32, f32) = (0.0, 0.0, 0.0);

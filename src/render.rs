@@ -12,7 +12,7 @@ pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Op
 
     for (i, obj) in objs.iter().enumerate() {
         if let HitType::Hit(t) = obj.hit(r, lim) {
-            let p = r.o + Vector::new_s(t, 3) * r.d;
+            let p = r.o + Vector::from_s(t, 3) * r.d;
             if t < best_t {
                 best = Some((i, p));
                 best_t = t;
@@ -28,7 +28,7 @@ pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Op
 pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
     for (i, obj) in objs.iter().enumerate() {
         if let HitType::Hit(t) = obj.hit(r, lim) {
-            let p = r.o + Vector::new_s(t, 3) * r.d;
+            let p = r.o + Vector::from_s(t, 3) * r.d;
             return Some((i, p))
         }
     }
@@ -58,17 +58,15 @@ pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteracti
 
             // transform canvas coordinates to viewport coordinates
             // note that the viewport axis and scale is the same of the canvas, so the transform is just a scaling op
-            let view_coord = Vector::new_v3(
-                [
-                    (xf + start.0 as f32) * view_width / dims.0 as f32,
-                    (yf - start.1 as f32) * view_height / dims.1 as f32,
-                    view_dist,
-                ],
+            let view_coord = Vector::from_3(
+                (xf + start.0 as f32) * view_width / dims.0 as f32,
+                (yf - start.1 as f32) * view_height / dims.1 as f32,
+                view_dist,
             );
             
             // create ray coming off viewport
             let v_ray = Ray {
-                o: Vector::new_v3(CAM_POS),
+                o: Vector::from_3(CAM_POS.0, CAM_POS.1, CAM_POS.2),
                 d: view_coord, // can adjust rotation by multiplying by rotation matrix here
             };
 

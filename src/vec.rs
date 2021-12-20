@@ -20,7 +20,7 @@ impl Vector {
         }
     }
 
-    pub fn new_s(s: f32, len: usize) -> Vector {
+    pub fn from_s(s: f32, len: usize) -> Vector {
         assert!(len > 0);
         assert!(len < 5);
 
@@ -30,7 +30,7 @@ impl Vector {
         }
     }
 
-    pub fn new_v(arr: [f32; 4], len: usize) -> Vector {
+    pub fn from_v(arr: [f32; 4], len: usize) -> Vector {
         assert!(len > 0);
         assert!(len < 5);
 
@@ -40,9 +40,9 @@ impl Vector {
         }
     }
 
-    pub fn new_v3(arr: [f32; 3]) -> Vector {
+    pub fn from_3(x: f32, y: f32, z: f32) -> Vector {
         Vector {
-            v: [arr[0], arr[1], arr[2], 0.0],
+            v: [x, y, z, 0.0],
             len: 3
         }
     }
@@ -220,5 +220,5 @@ pub fn refl(i: Vector, n: Vector) -> Vector {
     
     // compute R = 2 * N * dot(N, I) - I
     let s = n.dot(i) * 2.0;
-    Vector::new_s(s, i.len()).mul(n).sub(i)
+    Vector::from_s(s, i.len()).mul(n).sub(i)
 }
