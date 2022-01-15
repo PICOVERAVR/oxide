@@ -18,7 +18,7 @@ fn main() -> std::io::Result<()> {
 
     let path = &args[1];
 
-    let (cfg, spheres, lights) = config::read_cfg(path).unwrap();
+    let (cfg, spheres, lights) = config::read_cfg(path).expect("could not import config file");
 
     let w = cfg.output.width;
     let h = cfg.output.height;

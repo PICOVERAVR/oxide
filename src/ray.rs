@@ -1,28 +1,41 @@
 use crate::vec::*;
 use crate::render::{closest_hit, any_hit};
 
+/// Defines how a light can behave.
 pub enum LightType {
-    Point(Vector), // holds the position of the light
-    Directional(Vector), // holds the direction going _to_ the light
+    /// A point light that emits light from a single point.
+    Point(Vector),
+    /// A directional light that emits light from a single direction.
+    /// The `Vector` held holds the direction going _to_ the light source.
+    Directional(Vector),
+    /// A ambient light illuminates everything equally.
     Ambient,
 }
 
+/// A light source in the scene.
 pub struct Light {
     pub color: Vector,
     pub kind: LightType,
 }
 
+/// A mathematical ray structure.
 pub struct Ray {
+    /// The origin.
     pub o: Vector,
+    /// The direction.
     pub d: Vector,
 }
 
+/// Defines how a ray can intersect with things.
 #[derive(PartialEq)]
 pub enum HitType {
-    Hit(f32), // returns closest time t of intersection
+    /// Indicates an intersection at time parameter `t`.
+    Hit(f32),
+    /// Indicates no intersection.
     Miss(),
 }
 
+/// Controls how colors appear in the scene.
 #[derive(Copy, Clone)]
 pub struct Material {
     pub color: Vector,
@@ -30,22 +43,26 @@ pub struct Material {
     pub refl: f32, // reflectivity from 0 to 1
 }
 
-// behavior needed to interact with traced rays
+/// Defines behavior needed to interact with traced rays.
 pub trait RayInteraction {
-    // check for hit from ray r over time range t
+    /// Checks for a hit from ray `r` over time range `t`.
     fn hit(&self, r: &Ray, t: (f32, f32)) -> HitType;
 
-    // calculate normal at point p on surface
+    /// Calculates a normal at point `p` on the object surface.
     fn normal(&self, p: &Vector) -> Vector;
 
-    // calculate color at point p on surface
+    /// Calculates the color at point `p` on surface.
+    /// Constant unless the material is defined procedurally.
     fn material(&self, p: &Vector) -> Material;
 }
 
-// an infinite plane with a given normal
+/// Defines an infinite plane with a given normal.
 pub struct Plane {
+    /// A point on the plane.
     pub p: Vector,
+    /// A normal perpendicular to the plane.
     pub n: Vector,
+    /// The material of the plane.
     pub mat: Material,
 }
 
@@ -64,14 +81,18 @@ impl RayInteraction for Plane {
     }
 }
 
+/// Defines a sphere.
 pub struct Sphere {
+    /// The center of the sphere.
     pub c: Vector,
+    /// The radius of the sphere.
     pub r: f32,
+    /// The material of the sphere.
     pub mat: Material,
 }
 
 impl RayInteraction for Sphere {
-    // check if ray r hits sphere s at time t
+    /// Checks if ray `r` hits sphere `s` at time `t`.
     fn hit(&self, r: &Ray, t: (f32, f32)) -> HitType {
         let a = r.d.dot(r.d);
         
@@ -120,8 +141,8 @@ impl RayInteraction for Sphere {
     }
 }
 
-// runs lighting calculations at point p for object obj
-// num_refl determines maximum recursion depth reflections
+/// Runs lighting calculations at point `p` for object `obj`.
+/// `num_refl` determines the maximum recursion depth reflections.
 pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector, l: &Light, num_refl: u32) -> Vector {
 
     let lc = l.color;
@@ -154,7 +175,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
     let diff_v = Vector::from_s(diff, 3);
     color = diff_v * color * l.color;
 
-    let r = refl(lv, n); // calculate reflected vector off normal
+    let r = Vector::refl(lv, n); // calculate reflected vector off normal
     
     let np = -*p; // negative p, or a vector to the camera
     let spec_dot = r.norm().dot(np.norm());
@@ -168,7 +189,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
     color.clamp(0.0, 1.0); // clamp color to proper range
 
     if num_refl > 0 && m.refl > 0.0 {
-        let r = refl(lv, obj.normal(p));
+        let r = Vector::refl(lv, obj.normal(p));
         let ref_ray = Ray {
             o: *p,
             d: r,

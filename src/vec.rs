@@ -1,5 +1,8 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
+/// A vector with anywhere between 1 and 4 elements.
+/// This struct is much faster than using the native Rust `Vec` type since `Vec` requires memory allocations for all vectors,
+/// while Vector always lives on the stack.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Vector {
     pub v: [f32; 4],
@@ -7,6 +10,7 @@ pub struct Vector {
 }
 
 impl Vector {
+    /// Returns a zero vector of size `len`.
     pub fn zero(len: usize) -> Vector {
         assert!(len > 0);
         assert!(len < 5);
@@ -17,6 +21,7 @@ impl Vector {
         }
     }
 
+    /// Returns a vector with all elements set to `s` and of size `len`.
     pub fn from_s(s: f32, len: usize) -> Vector {
         assert!(len > 0);
         assert!(len < 5);
@@ -27,6 +32,7 @@ impl Vector {
         }
     }
 
+    /// Returns a vector created from array `arr` and of size `len`.
     pub fn from_v(arr: [f32; 4], len: usize) -> Vector {
         assert!(len > 0);
         assert!(len < 5);
@@ -37,13 +43,18 @@ impl Vector {
         }
     }
 
+    /// Returns a vector created from regular Rust vector `vec` with a size between 1 and 4.
     pub fn from_vec(vec: Vec<f32>) -> Vector {
+        assert!(!vec.is_empty());
+        assert!(vec.len() < 5);
+
         Vector {
             v: [vec[0], vec[1], vec[2], vec[3]],
             len: vec.len()
         }
     }
 
+    /// Returns a vector of length 3 and with values `x`, `y`, and `z`.
     pub fn from_3(x: f32, y: f32, z: f32) -> Vector {
         Vector {
             v: [x, y, z, 0.0],
@@ -51,15 +62,18 @@ impl Vector {
         }
     }
 
-    // length of the vector - must be in range [1, 4]
+    /// Returns the length of the vector, which is always between 1 and 4 (inclusive).
     pub fn len(&self) -> usize {
         self.len
     }
 
+
+    /// Returns true if the vector is empty, which should never happen.
     pub fn is_empty(&self) -> bool {
         self.len == 0
     }
 
+    /// Returns the dot product of `self` and `rhs`.  Both vectors must have the same length.
     pub fn dot(self, rhs: Vector) -> f32 {
         assert!(self.len == rhs.len);
 
@@ -71,6 +85,7 @@ impl Vector {
         sum
     }
 
+    /// Returns the normalized version of `self`.
     pub fn norm(self) -> Vector {
         let mag = self.dot(self).sqrt();
 
@@ -80,6 +95,7 @@ impl Vector {
         }
     }
 
+    /// Returns a vector with all elements clamped to the range [min, max].
     pub fn clamp(self, min: f32, max: f32) -> Vector {
 
         let mut ret = Vector {
@@ -146,6 +162,16 @@ impl Vector {
         ret
     }
     */
+
+    /// Returns the reflection of `i` off a surface with the normal `n`.
+    /// I and N should be pointing in the same direction and have the same length.
+    pub fn refl(i: Vector, n: Vector) -> Vector {
+        assert!(i.len() == n.len());
+        
+        // compute R = 2 * N * dot(N, I) - I
+        let s = n.dot(i) * 2.0;
+        Vector::from_s(s, i.len()).mul(n).sub(i)
+    }
 }
 
 impl Add<Vector> for Vector {
@@ -221,14 +247,4 @@ impl PartialEq for Vector {
 
         true
     }
-}
-
-// returns the reflection of i off a surface with the normal N
-// NOTE: I and N should be pointing in the same direction
-pub fn refl(i: Vector, n: Vector) -> Vector {
-    assert!(i.len() == n.len());
-    
-    // compute R = 2 * N * dot(N, I) - I
-    let s = n.dot(i) * 2.0;
-    Vector::from_s(s, i.len()).mul(n).sub(i)
 }

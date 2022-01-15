@@ -4,8 +4,8 @@ use crate::mat::*;
 use crate::ray::*;
 use crate::opts::*;
 
-// iterate through all objects in objs and return the index of the closest object and the hit point
-// (or None if nothing hits)
+/// Iterates through all objects in objs and return the index of the _closest_ object and the hit point.
+/// Returns `None` if nothing hits.
 pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
     let mut best_t = f32::INFINITY;
     let mut best = None;
@@ -23,8 +23,8 @@ pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Op
     best
 }
 
-// iterate through all objects in objs and return the index of the first object to hit and the hit point
-// (or None if nothing hits)
+/// Ierates through all objects in objs and return the index of the _first_ object to hit and the hit point.
+/// Returns `None` if nothing hits.
 pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
     for (i, obj) in objs.iter().enumerate() {
         if let HitType::Hit(t) = obj.hit(r, lim) {
@@ -36,6 +36,8 @@ pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option
     None
 }
 
+/// Renders a scene containing objects in `objs`, lights in `lights`, and configuration information in `cfg`.
+/// Returns a Matrix of colors representing RGB values of the final image.
 pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteraction], lights: &[Light], cfg: &Config) -> Matrix<Color> {
     let view_dist = 0.5; // distance from camera to viewport
     let view_width = 1.0; // width of viewport

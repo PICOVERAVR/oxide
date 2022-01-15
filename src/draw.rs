@@ -1,6 +1,7 @@
 use crate::mat::Matrix;
 use crate::vec::*;
 
+/// An RGB type with 8 bits per channel.
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
     pub r: u8,
@@ -8,9 +9,8 @@ pub struct Color {
     pub b: u8,
 }
 
-// draw a pixel on ppm
-// x and y are coordinates going from -len.0/2 to len.0/2 and -len.1/2 to len.1/2 respectively,
-// where len is the size 
+/// Draws a pixel on `ppm`.
+/// `x` and `y` are coordinates going from `-len.0/2` to `len.0/2` and `-len.1/2` to `len.1/2` respectively, where `len` is the canvas size.
 pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), len: (usize, usize), color: Color) {
     // convert bounds from [-n/2, n/2] to [0, n]
     let ax = pixel.0 + len.0 as i32 / 2;
@@ -19,7 +19,7 @@ pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), len: (usize, usize
     ppm.mat[ay as usize * len.0 + ax as usize] = color;
 }
 
-// maps a float vector to a concrete color type
+/// Maps a float vector to a concrete color type.
 pub fn map_color(c: Vector) -> Color {
     Color {
         r: (c.v[0] * u8::max_value() as f32) as u8,
@@ -29,7 +29,7 @@ pub fn map_color(c: Vector) -> Color {
 }
 
 /*
-// draw a line from start to end using Bresenham's line algorithm
+/// Draw a line from start to end using Bresenham's line algorithm.
 pub fn draw_line(buf: &mut Vec<Color>, rlen: usize, start: (i32, i32), end: (i32, i32), color: Color) {
     let dx = i32::abs(end.0 - start.0);
     let dy = -i32::abs(end.1 - start.1);

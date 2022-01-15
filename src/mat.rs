@@ -4,6 +4,7 @@
 // [ 6 7 8 ]
 //   ^ col
 
+/// A matrix with `rlen` rows and `clen` columns.
 #[derive(Debug)]
 pub struct Matrix<T> {
     pub mat: Vec<T>,
