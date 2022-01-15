@@ -36,7 +36,7 @@ pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option
     None
 }
 
-pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteraction], lights: &[Light]) -> Matrix<Color> {
+pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteraction], lights: &[Light], cfg: &Config) -> Matrix<Color> {
     let view_dist = 0.5; // distance from camera to viewport
     let view_width = 1.0; // width of viewport
     let view_height = 1.0 * dims.1 as f32 / dims.0 as f32; // height of viewport, transformed to make the viewport square regardless of the output dimensions
@@ -63,17 +63,19 @@ pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteracti
                 (yf - start.1 as f32) * view_height / dims.1 as f32,
                 view_dist,
             );
+
+            let cv = cfg.world.cam_pos;
             
             // create ray coming off viewport
             let v_ray = Ray {
-                o: Vector::from_3(CAM_POS.0, CAM_POS.1, CAM_POS.2),
+                o: Vector::from_3(cv.v[0], cv.v[1], cv.v[2]),
                 d: view_coord, // can adjust rotation by multiplying by rotation matrix here
             };
 
             if let Some((i, p)) = closest_hit(&v_ray, objs, (view_dist, f32::INFINITY)) {
                 let mut color_v = Vector::zero(3);
                 for l in lights {
-                    color_v = color_v + light(&objs[i], objs, &p, l, MAX_REFLECTIONS);
+                    color_v = color_v + light(&objs[i], objs, &p, l, cfg.render.threads);
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color

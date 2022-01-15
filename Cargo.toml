@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 num-traits = "0.2.14" # allows math to be performed on generic types
 num = "0.4.0" # allows casting from primitives to generic types
+toml = "0.5" # for reading config files
 
 [profile.dev]
 opt-level = 1 # some optimization is basically required for reasonable runtime behavior

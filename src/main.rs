@@ -29,76 +29,18 @@ use std::thread;
 
 fn main() -> std::io::Result<()> {
 
-    let header = format!("P6 {} {} {}\n", WIDTH, HEIGHT, 2u32.pow(BITS) - 1);
+    let (cfg, spheres, lights) = read_cfg("scene.toml").unwrap();
+
+    let w = cfg.output.width;
+    let h = cfg.output.height;
+
+    let header = format!("P6 {} {} {}\n", w, h, 2u32.pow(cfg.output.bits) - 1);
     
     let mut file = File::create("output.ppm")?; // "?" unpacks the result if Ok and returns the error if not
     file.write_all(header.as_bytes())?;
 
-    let spheres = vec![
-        Sphere { // large sphere to act as ground
-            c: Vector::from_3(0.0, -5001.0, 0.0),
-            r: 5000.0,
-            mat: Material {
-                color: Vector::from_3(1.0, 1.0, 1.0),
-                spec: 250.0,
-                refl: 0.8,
-            },
-        },
-        Sphere {
-            c: Vector::from_3(0.0, -1.0, 3.0),
-            r: 1.0,
-            mat: Material {
-                color: Vector::from_3(1.0, 0.0, 0.0),
-                spec: 500.0,
-                refl: 0.5,
-            },
-        },
-        Sphere {
-            c: Vector::from_3(2.0, 0.0, 4.0),
-            r: 1.0,
-            mat: Material {
-                color: Vector::from_3(0.0, 0.0, 1.0),
-                spec: 500.0,
-                refl: 0.5,
-            },
-        },
-        Sphere {
-            c: Vector::from_3(-2.0, 0.0, 4.0),
-            r: 1.0,
-            mat: Material {
-                color: Vector::from_3(0.0, 1.0, 0.0),
-                spec: 10.0,
-                refl: 0.5,
-            },
-        },
-        Sphere {
-            c: Vector::from_3(0.0, 1.0, 8.0),
-            r: 2.0,
-            mat: Material {
-                color: Vector::from_3(1.0, 1.0, 1.0),
-                spec: -1.0,
-                refl: 0.95,
-            },
-        },
-    ];
-
-    let lights = vec![
-        Light {
-            color: Vector::from_3(0.2, 0.2, 0.2),
-            kind: LightType::Ambient,
-        },
-        Light {
-            color: Vector::from_3(0.6, 0.6, 0.6),
-            kind: LightType::Point(Vector::from_3(2.0, 1.0, 0.0)),
-        },
-        Light {
-            color: Vector::from_3(0.2, 0.2, 0.2),
-            kind: LightType::Directional(Vector::from_3(1.0, 4.0, 4.0)),
-        },
-    ];
-
     // print to stderr so output isn't buffered until the end
-    eprintln!("\nrender dimensions: {} x {}", WIDTH, HEIGHT);
+    eprintln!("\nrender dimensions: {} x {}", w, h);
     eprintln!("rendering... ");
 
     // split the render into vertical slices and divide amongst threads
@@ -109,23 +51,25 @@ fn main() -> std::io::Result<()> {
 
     let mut m_parts = vec![];
 
-    let dt = (HEIGHT / THREADS) as i32;
-    let start = -(HEIGHT as i32) / 2 + dt / 2;
+    let dt = (h / cfg.render.threads as usize) as i32;
+    let start = -(h as i32) / 2 + dt / 2;
     
     let clock = time::Instant::now();
 
     m_parts.push(render(
         (0, start),
-        (WIDTH, dt as usize),
+        (w, dt as usize),
         &spheres,
-        &lights
+        &lights,
+        &cfg
     ));
 
     m_parts.push(render(
         (0, start + dt),
-        (WIDTH, dt as usize),
+        (w, dt as usize),
         &spheres,
-        &lights
+        &lights,
+        &cfg
     ));
 
     let time = clock.elapsed();
@@ -157,7 +101,7 @@ fn main() -> std::io::Result<()> {
         bvec.append(&mut get_bytes(m));
     }
 
-    assert_eq!(bvec.len(), WIDTH * HEIGHT * 3);
+    assert_eq!(bvec.len(), w * h * 3);
 
     file.write_all(&bvec)?;
 

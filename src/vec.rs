@@ -3,7 +3,7 @@ use num_traits::float::Float;
 
 use num::cast::*;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Vector {
     pub v: [f32; 4],
     len: usize,
@@ -37,6 +37,13 @@ impl Vector {
         Vector {
             v: arr,
             len
+        }
+    }
+
+    pub fn from_vec(vec: Vec<f32>) -> Vector {
+        Vector {
+            v: [vec[0], vec[1], vec[2], vec[3]],
+            len: vec.len()
         }
     }
 

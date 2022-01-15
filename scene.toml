@@ -1,0 +1,79 @@
+[output]
+width = 1200
+height = 800
+bits = 8
+
+[render]
+max_reflections = 3
+threads = 2
+
+[world]
+camera_position = [0.0, 0.0, 0.0]
+
+[materials]
+    [materials.white]
+    color = [1.0, 1.0, 1.0]
+    spec = 250.0
+    refl = 0.8
+
+    [materials.red]
+    color = [1.0, 0.0, 0.0]
+    spec = 250.0
+    refl = 0.8
+
+    [materials.green]
+    color = [0.0, 1.0, 0.0]
+    spec = 10.0
+    refl = 0.5
+
+    [materials.blue]
+    color = [0.0, 0.0, 1.0]
+    spec = 500.0
+    refl = 0.5
+
+    [materials.refl]
+    color = [1.0, 1.0, 1.0]
+    spec = -1.0
+    refl = 0.95
+
+[objects]
+    [objects.floor]
+    center = [0.0, -5001.0, 0.0]
+    radius = 5000.0
+    material = "white"
+
+    [objects.sunk]
+    center = [0.0, -1.0, 3.0]
+    radius = 1.0
+    material = "red"
+
+    [objects.right]
+    center = [2.0, 0.0, 4.0]
+    radius = 1.0
+    material = "blue"
+
+    [objects.left]
+    center = [-2.0, 0.0, 4.0]
+    radius = 1.0
+    material = "green"
+
+    [objects.mirror]
+    center = [0.0, 1.0, 8.0]
+    radius = 2.0
+    material = "refl"
+
+
+[lights]
+    [lights.1]
+    type = "ambient"
+    color = [0.2, 0.2, 0.2]
+
+    [lights.2]
+    type = "point"
+    color = [0.6, 0.6, 0.6]
+    position = [2.0, 1.0, 0.0]
+
+    [lights.3]
+    type = "directional"
+    color = [0.2, 0.2, 0.2]
+    position = [1.0, 4.0, 4.0]
