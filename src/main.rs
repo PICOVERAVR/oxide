@@ -24,19 +24,29 @@ use config::*;
 
 use std::fs::File;
 use std::io::Write;
-use std::time;
-use std::thread;
+use std::{time, thread, env};
 
 fn main() -> std::io::Result<()> {
 
-    let (cfg, spheres, lights) = read_cfg("scene.toml").unwrap();
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        println!("usage: oxide <config file>");
+        return Ok(())
+    }
+
+    let path = &args[1];
+
+    let (cfg, spheres, lights) = read_cfg(path).unwrap();
 
     let w = cfg.output.width;
     let h = cfg.output.height;
 
     let header = format!("P6 {} {} {}\n", w, h, 2u32.pow(cfg.output.bits) - 1);
+
+    let out_parts: Vec<&str> = path.split('.').collect();
+    let out_path = String::from(out_parts[0]) + ".ppm";
     
-    let mut file = File::create("output.ppm")?; // "?" unpacks the result if Ok and returns the error if not
+    let mut file = File::create(out_path)?; // "?" unpacks the result if Ok and returns the error if not
     file.write_all(header.as_bytes())?;
 
     // print to stderr so output isn't buffered until the end
