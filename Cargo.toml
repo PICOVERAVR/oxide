@@ -1,13 +1,11 @@
 [package]
 name = "oxide"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+description = "A software raytracer, driven by config files."
 
 [dependencies]
-num-traits = "0.2.14" # allows math to be performed on generic types
-num = "0.4.0" # allows casting from primitives to generic types
 toml = "0.5" # for reading config files
 
 [profile.dev]

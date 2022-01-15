@@ -1,3 +1,5 @@
+//! Defines all configuration options for the renderer.
+
 use crate::vec::Vector;
 
 /// Contains information regarding the output format of the image.

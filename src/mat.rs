@@ -1,10 +1,14 @@
-// matrix organization:
-// [ 0 1 2 ] < row
-// [ 3 4 5 ]
-// [ 6 7 8 ]
-//   ^ col
+//! Defines a matrix and some operations that can be applied on it.
+//! Also used for holding the final image.
 
 /// A matrix with `rlen` rows and `clen` columns.
+/// Matrix organization:
+/// ```
+/// [ 0 1 2 ] < row
+/// [ 3 4 5 ]
+/// [ 6 7 8 ]
+///   ^ col
+/// ```
 #[derive(Debug)]
 pub struct Matrix<T> {
     pub mat: Vec<T>,

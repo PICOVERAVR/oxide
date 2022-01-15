@@ -1,3 +1,5 @@
+//! Controls how rays interact with shapes.
+
 use crate::vec::*;
 use crate::render::{closest_hit, any_hit};
 

@@ -1,3 +1,5 @@
+//! Contains overall render logic.
+
 use crate::draw::*;
 use crate::vec::*;
 use crate::mat::*;

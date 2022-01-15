@@ -1,3 +1,5 @@
+//! Defines a faster Vector datatype for graphics use.
+
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
 /// A vector with anywhere between 1 and 4 elements.

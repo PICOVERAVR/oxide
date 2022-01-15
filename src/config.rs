@@ -1,3 +1,5 @@
+//! Defines how the .toml config file is read and interpreted.
+
 use std::fs;
 use std::collections::HashMap;
 use toml::Value;

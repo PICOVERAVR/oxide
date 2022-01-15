@@ -1,3 +1,5 @@
+//! Contains functions for manipulating the final image.
+
 use crate::mat::Matrix;
 use crate::vec::*;
 
