@@ -1,33 +1,9 @@
 use std::fs;
-use toml::Value;
-use crate::ray::{Sphere, LightType};
-use crate::{Vector, Material, Light};
 use std::collections::HashMap;
-
-#[derive(Default)]
-pub struct Output {
-    pub width: usize,
-    pub height: usize,
-    pub bits: u32,
-}
-
-#[derive(Default)]
-pub struct Render {
-    pub max_reflections: u32,
-    pub threads: u32,
-}
-
-#[derive(Default)]
-pub struct World {
-    pub cam_pos: Vector,
-}
-
-#[derive(Default)]
-pub struct Config {
-    pub output: Output,
-    pub render: Render,
-    pub world: World,
-}
+use toml::Value;
+use oxide::ray::{Sphere, Material, Light, LightType};
+use oxide::opts::*;
+use oxide::vec::Vector;
 
 pub fn read_cfg(path: &str) -> Option<(Config, Vec<Sphere>, Vec<Light>)> {
     let cfg_str = fs::read_to_string(path).unwrap();

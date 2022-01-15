@@ -1,5 +1,3 @@
-use num_traits::float::Float;
-
 // matrix organization:
 // [ 0 1 2 ] < row
 // [ 3 4 5 ]
@@ -13,6 +11,7 @@ pub struct Matrix<T> {
     pub clen: usize,
 }
 
+/*
 pub fn mat<T>(rlen: usize, clen: usize) -> Matrix<T> {
     Matrix {
         mat: Vec::with_capacity(rlen * clen),
@@ -49,25 +48,25 @@ pub fn row<T>(m: &Matrix<T>, n: usize) -> Vec<T>
 }
 
 // multiply two matrices inefficiently
-// pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> 
-//     where T: Float
-//     {
-//     let mut ret = Matrix {
-//         mat: Vec::with_capacity(lhs.clen * rhs.rlen),
-//         rlen: rhs.rlen,
-//         clen: lhs.clen,
-//     };
+pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> 
+    where T: Float
+    {
+    let mut ret = Matrix {
+        mat: Vec::with_capacity(lhs.clen * rhs.rlen),
+        rlen: rhs.rlen,
+        clen: lhs.clen,
+    };
 
-//     for y in 0..ret.clen {
-//         for x in 0..rhs.rlen {
-//             let row = row(lhs, y);
-//             let col = col(rhs, x);
-//             ret.mat.push(row.dot(col));
-//         }
-//     }
+    for y in 0..ret.clen {
+        for x in 0..rhs.rlen {
+            let row = row(lhs, y);
+            let col = col(rhs, x);
+            ret.mat.push(row.dot(col));
+        }
+    }
 
-//     ret
-// }
+    ret
+}
 
 // append the contents of matrix app to the vector v
 // excluding the first cut.0 rows and the last cut.1 columns
@@ -84,3 +83,4 @@ pub fn cut<T>(app: &Matrix<T>, cut: (usize, usize)) -> Vec<T>
 
     v
 }
+*/

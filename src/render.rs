@@ -2,7 +2,7 @@ use crate::draw::*;
 use crate::vec::*;
 use crate::mat::*;
 use crate::ray::*;
-use crate::config::*;
+use crate::opts::*;
 
 // iterate through all objects in objs and return the index of the closest object and the hit point
 // (or None if nothing hits)

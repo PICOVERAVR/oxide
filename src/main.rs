@@ -1,30 +1,12 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
-
-//use vec::*; // "vec" is now valid in the main.rs scope, used when declaring types or concrete functions
-mod vec; // triggers a load of the vec module
-mod vec_test;
-use vec::*;
-
-mod mat;
-mod mat_test;
-use mat::*;
-
-mod draw;
-use draw::*;
-
-mod ray;
-use ray::*;
-
-mod render;
-use render::*;
-
 mod config;
-use config::*;
 
 use std::fs::File;
 use std::io::Write;
-use std::{time, thread, env};
+use std::{time, env};
+
+// this call ensures that we're using the library version of the functions rather than including them in the binary and library
+// if this is failing, make sure to run "cargo clean" if you built everything as a binary
+use oxide::{render, mat, draw};
 
 fn main() -> std::io::Result<()> {
 
@@ -36,7 +18,7 @@ fn main() -> std::io::Result<()> {
 
     let path = &args[1];
 
-    let (cfg, spheres, lights) = read_cfg(path).unwrap();
+    let (cfg, spheres, lights) = config::read_cfg(path).unwrap();
 
     let w = cfg.output.width;
     let h = cfg.output.height;
@@ -66,7 +48,7 @@ fn main() -> std::io::Result<()> {
     
     let clock = time::Instant::now();
 
-    m_parts.push(render(
+    m_parts.push(render::render(
         (0, start),
         (w, dt as usize),
         &spheres,
@@ -74,7 +56,7 @@ fn main() -> std::io::Result<()> {
         &cfg
     ));
 
-    m_parts.push(render(
+    m_parts.push(render::render(
         (0, start + dt),
         (w, dt as usize),
         &spheres,
@@ -86,7 +68,7 @@ fn main() -> std::io::Result<()> {
     
     eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());    
 
-    fn get_bytes(m: Matrix<Color>) -> Vec<u8> {
+    let get_bytes = |m: mat::Matrix<draw::Color>| -> Vec<u8> {
         let size = (m.rlen - 1) * (m.clen - 1) * 3;
         let mut buf: Vec<u8> = Vec::with_capacity(size);
 
@@ -103,7 +85,7 @@ fn main() -> std::io::Result<()> {
         }
 
         buf
-    }
+    };
 
     let mut bvec = vec![];
 

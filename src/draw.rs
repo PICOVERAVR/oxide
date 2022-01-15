@@ -28,6 +28,7 @@ pub fn map_color(c: Vector) -> Color {
     }
 }
 
+/*
 // draw a line from start to end using Bresenham's line algorithm
 pub fn draw_line(buf: &mut Vec<Color>, rlen: usize, start: (i32, i32), end: (i32, i32), color: Color) {
     let dx = i32::abs(end.0 - start.0);
@@ -71,3 +72,4 @@ pub fn draw_line(buf: &mut Vec<Color>, rlen: usize, start: (i32, i32), end: (i32
         }
     }
 }
+*/

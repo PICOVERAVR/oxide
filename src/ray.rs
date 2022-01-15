@@ -1,4 +1,3 @@
-use crate::draw::Color;
 use crate::vec::*;
 use crate::render::{closest_hit, any_hit};
 

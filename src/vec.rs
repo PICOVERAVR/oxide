@@ -1,7 +1,4 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
-use num_traits::float::Float;
-
-use num::cast::*;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Vector {
@@ -59,6 +56,10 @@ impl Vector {
         self.len
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
     pub fn dot(self, rhs: Vector) -> f32 {
         assert!(self.len == rhs.len);
 
@@ -102,6 +103,7 @@ impl Vector {
         ret
     }
 
+    /*
     pub fn min(self, rhs: Vector) -> Vector {
 
         let mut ret = Vector {
@@ -143,6 +145,7 @@ impl Vector {
 
         ret
     }
+    */
 }
 
 impl Add<Vector> for Vector {
