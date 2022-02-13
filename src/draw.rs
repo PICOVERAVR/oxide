@@ -24,9 +24,9 @@ pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), len: (usize, usize
 /// Maps a float vector to a concrete color type.
 pub fn map_color(c: Vector) -> Color {
     Color {
-        r: (c.v[0] * u8::max_value() as f32) as u8,
-        g: (c.v[1] * u8::max_value() as f32) as u8,
-        b: (c.v[2] * u8::max_value() as f32) as u8,
+        r: (c.get()[0] * u8::max_value() as f32) as u8,
+        g: (c.get()[1] * u8::max_value() as f32) as u8,
+        b: (c.get()[2] * u8::max_value() as f32) as u8,
     }
 }
 

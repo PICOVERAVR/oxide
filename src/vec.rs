@@ -7,11 +7,16 @@ use std::ops::{Add, Sub, Mul, Div, Neg};
 /// while Vector always lives on the stack.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Vector {
-    pub v: [f32; 4],
+    v: [f32; 4],
     len: usize,
 }
 
 impl Vector {
+    /// Returns the internal vector state. Exists so the internal `v` field can be replaced with SIMD intrinsics if possible.
+    pub fn get(&self) -> [f32; 4] {
+        self.v
+    }
+
     /// Returns a zero vector of size `len`.
     pub fn zero(len: usize) -> Vector {
         assert!(len > 0);

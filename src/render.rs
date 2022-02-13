@@ -8,7 +8,7 @@ use crate::opts::*;
 
 /// Iterates through all objects in objs and return the index of the _closest_ object and the hit point.
 /// Returns `None` if nothing hits.
-pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
+pub fn closest_hit(r: &Ray, objs: &[Box<dyn RayInteraction>], lim: (f32, f32)) -> Option<(usize, Vector)> {
     let mut best_t = f32::INFINITY;
     let mut best = None;
 
@@ -27,7 +27,7 @@ pub fn closest_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Op
 
 /// Ierates through all objects in objs and return the index of the _first_ object to hit and the hit point.
 /// Returns `None` if nothing hits.
-pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option<(usize, Vector)> {
+pub fn any_hit(r: &Ray, objs: &[Box<dyn RayInteraction>], lim: (f32, f32)) -> Option<(usize, Vector)> {
     for (i, obj) in objs.iter().enumerate() {
         if let HitType::Hit(t) = obj.hit(r, lim) {
             let p = r.o + Vector::from_s(t, 3) * r.d;
@@ -40,7 +40,7 @@ pub fn any_hit(r: &Ray, objs: &[impl RayInteraction], lim: (f32, f32)) -> Option
 
 /// Renders a scene containing objects in `objs`, lights in `lights`, and configuration information in `cfg`.
 /// Returns a Matrix of colors representing RGB values of the final image.
-pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteraction], lights: &[Light], cfg: &Config) -> Matrix<Color> {
+pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[Box<dyn RayInteraction>], lights: &[Light], cfg: &Config) -> Matrix<Color> {
     let view_dist = 0.5; // distance from camera to viewport
     let view_width = 1.0; // width of viewport
     let view_height = 1.0 * dims.1 as f32 / dims.0 as f32; // height of viewport, transformed to make the viewport square regardless of the output dimensions
@@ -72,14 +72,14 @@ pub fn render(start: (i32, i32), dims: (usize, usize), objs: &[impl RayInteracti
             
             // create ray coming off viewport
             let v_ray = Ray {
-                o: Vector::from_3(cv.v[0], cv.v[1], cv.v[2]),
+                o: cv,
                 d: view_coord, // can adjust rotation by multiplying by rotation matrix here
             };
 
             if let Some((i, p)) = closest_hit(&v_ray, objs, (view_dist, f32::INFINITY)) {
                 let mut color_v = Vector::zero(3);
                 for l in lights {
-                    color_v = color_v + light(&objs[i], objs, &p, l, cfg.render.threads);
+                    color_v = color_v + light(i, objs, &p, l, cfg.render.max_reflections);
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color

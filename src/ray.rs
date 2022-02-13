@@ -70,8 +70,17 @@ pub struct Plane {
 
 impl RayInteraction for Plane {
     fn hit(&self, r: &Ray, _t: (f32, f32)) -> HitType {
-        let t = self.n.dot(self.p - r.o) / self.n.dot(r.d);
-        HitType::Hit(t)
+        if self.n.dot(-r.d) >= 0.0 {
+            let t = self.n.dot(r.o - self.p) / self.n.dot(-r.d);
+
+            if _t.0 < t && t < _t.1 {
+                return HitType::Hit(t)
+            } else {
+                return HitType::Miss()
+            }
+            
+        }
+        HitType::Miss()
     }
 
     fn normal(&self, _p: &Vector) -> Vector {
@@ -106,27 +115,27 @@ impl RayInteraction for Sphere {
         let t1 = (-b + (b * b - 4.0 * a * c).sqrt()) / (2.0 * a);
         let t2 = (-b - (b * b - 4.0 * a * c).sqrt()) / (2.0 * a);
 
-        // constrain t1 and t2 to the range [t.0, t.1] or assign em to be +/- inf
+        // constrain t1 and t2 to the range [t.0, t.1] or assign em to be inf
 
-        let t1 = match t1 {
-            _small if t1 <= t.0 => f32::NEG_INFINITY,
-            _fit if t.0 < t1 && t1 < t.1 => t1,
-            _large if t1 >= t.1 => f32::INFINITY,
-            _ => f32::INFINITY, // handles case where t is NaN
-        };
+        let mut inf = (false, false);
 
-        let t2 = match t2 {
-            _small if t2 <= t.0 => f32::NEG_INFINITY,
-            _fit if t.0 < t2 && t2 < t.1 => t2,
-            _large if t2 >= t.1 => f32::INFINITY,
-            _ => f32::INFINITY,
-        };
+        if t.0 < t1 && t1 < t.1 {
+            // statement here to avoid keeping NaNs
+        } else {
+            inf.0 = true;
+        }
+
+        if t.0 < t2 && t2 < t.1 {
+            // statement here to avoid keeping NaNs
+        } else {
+            inf.1 = true;
+        }
 
         match (t1, t2) {
-            _miss if t1.is_infinite() && t2.is_infinite() => HitType::Miss(),
-            _edge if !t1.is_infinite() && t2.is_infinite() => HitType::Hit(t1),
-            _edge if t1.is_infinite() && !t2.is_infinite() => HitType::Hit(t2),
-            _int if !t1.is_infinite() && !t2.is_infinite() => match (t1, t2) {
+            _miss if inf.0 && inf.1 => HitType::Miss(),
+            _edge if !inf.0 && inf.1 => HitType::Hit(t1),
+            _edge if inf.0 && !inf.1 => HitType::Hit(t2),
+            _int if !inf.0 && !inf.1 => match (t1, t2) {
                 _t1 if t1 < t2 => HitType::Hit(t1),
                 _t2 => HitType::Hit(t2), // t1 >= t2
             },
@@ -143,9 +152,9 @@ impl RayInteraction for Sphere {
     }
 }
 
-/// Runs lighting calculations at point `p` for object `obj`.
+/// Runs lighting calculations at point `p` for the object at index `i`.
 /// `num_refl` determines the maximum recursion depth reflections.
-pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector, l: &Light, num_refl: u32) -> Vector {
+pub fn light(obj_idx: usize, objs: &[Box<dyn RayInteraction>], p: &Vector, l: &Light, num_refl: u32) -> Vector {
 
     let lc = l.color;
 
@@ -160,6 +169,8 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
         LightType::Directional(_) => f32::INFINITY, // no max t for directional lights
         _ => 0.99, // don't test for shadows beyond the light origin for point lights
     };
+
+    let obj = &objs[obj_idx];
 
     let m = obj.material(p);
     let mut color = m.color;
@@ -204,7 +215,7 @@ pub fn light(obj: &impl RayInteraction, objs: &[impl RayInteraction], p: &Vector
                 kind: LightType::Point(*p),
             };
 
-            let ref_color = light(&objs[i2], objs, &p2, &ref_l, num_refl - 1);
+            let ref_color = light(i2, objs, &p2, &ref_l, num_refl - 1);
 
             // if we reflect off the object and hit something, compute the light for that:
             // color = color * (1 - refl) + ref_color * refl

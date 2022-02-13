@@ -66,7 +66,7 @@ fn main() -> std::io::Result<()> {
 
     let time = clock.elapsed();
     
-    eprintln!("done ({}.{} sec)\n", time.as_secs(), time.as_millis());    
+    eprintln!("done ({}.{:03} sec)\n", time.as_secs(), time.as_millis());    
 
     let get_bytes = |m: mat::Matrix<draw::Color>| -> Vec<u8> {
         let size = (m.rlen - 1) * (m.clen - 1) * 3;

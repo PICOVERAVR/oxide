@@ -3,13 +3,16 @@
 use std::fs;
 use std::collections::HashMap;
 use toml::Value;
-use oxide::ray::{Sphere, Material, Light, LightType};
+use oxide::ray::{Sphere, Plane, Material, Light, LightType, RayInteraction};
 use oxide::opts::*;
 use oxide::vec::Vector;
 
+type Triple = (Config, Vec<Box<dyn RayInteraction>>, Vec<Light>);
+
 /// Turns a .toml scene configuration file into a config struct.
 /// The file `test_scene.toml` is pretty self-documenting, so check that for details.
-pub fn read_cfg(path: &str) -> Option<(Config, Vec<Sphere>, Vec<Light>)> {
+pub fn read_cfg(path: &str) -> Option<Triple> {
+
     let cfg_str = fs::read_to_string(path).expect("could not read config file");
     let cfg = cfg_str.parse::<Value>().expect("could not parse config file");
 
@@ -20,7 +23,7 @@ pub fn read_cfg(path: &str) -> Option<(Config, Vec<Sphere>, Vec<Light>)> {
 
     // keep materials we've seen in a hash map for quick access
     let mut mats = HashMap::new();
-    let mut objs = vec![];
+    let mut objs: Vec<Box<dyn RayInteraction>> = vec![];
     let mut lights = vec![];
 
     // turn a .toml array into a Vector with 3 elements
@@ -48,11 +51,24 @@ pub fn read_cfg(path: &str) -> Option<(Config, Vec<Sphere>, Vec<Light>)> {
             "objects" => {
                 let obj_map = v.try_into::<toml::map::Map<String, Value>>().expect("could not cast object into map");
                 for (_, ov) in obj_map {
-                    let c = get_v3(&ov, "center");
-                    let r = ov["radius"].as_float().expect("could not cast into float") as f32;
-                    let mat = mats[ov["material"].as_str().expect("could not cast into string")];
+                    let t = ov["type"].as_str().expect("could not cast into string");
+                    match t {
+                        "sphere" => {
+                            let c = get_v3(&ov, "center");
+                            let r = ov["radius"].as_float().expect("could not cast into float") as f32;
+                            let mat = mats[ov["material"].as_str().expect("could not cast into string")];
 
-                    objs.push(Sphere {c, r, mat});
+                            objs.push(Box::new(Sphere {c, r, mat}));
+                        },
+                        "plane" => {
+                            let p = get_v3(&ov, "point");
+                            let n = get_v3(&ov, "normal").norm();
+                            let mat = mats[ov["material"].as_str().expect("could not cast into string")];
+                            
+                            objs.push(Box::new(Plane {p, n, mat}));
+                        }
+                        _ => panic!("found unknown object type!")
+                    }
                 }
             },
             "lights" => {

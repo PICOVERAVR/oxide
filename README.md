@@ -10,6 +10,13 @@ Run `$ oxide test_scene.toml` to render a test scene. The resulting render will 
 - Phong lighting (ambient, diffuse, and specular lighting)
 - Directional, point, and ambient lights
 - Reflections of arbitrary depth
-- Controllable via the `scene.toml` file
+- Support for spheres and planes
+- Controllable through a TOML configuration file
 
 Example renders over time are shown in the `outputs` directory.
+
+## TODOs
+- multithreading
+- faster execution
+  - cross platform SIMD is in nightly
+  - platform specific SIMD requires macro stuff and basically having two copies of vec.rs
