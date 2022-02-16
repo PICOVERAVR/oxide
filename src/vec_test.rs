@@ -45,6 +45,9 @@ mod tests {
     fn clamp_test() {
         let v = Vector::from_v([-5.0, -1.0, 1.0, 5.0], 4);
 
-        assert_eq!(v.clamp(-1.0, 1.0), Vector::from_v([-1.0, -1.0, 1.0, 1.0], 4));
+        assert_eq!(
+            v.clamp(-1.0, 1.0),
+            Vector::from_v([-1.0, -1.0, 1.0, 1.0], 4)
+        );
     }
 }

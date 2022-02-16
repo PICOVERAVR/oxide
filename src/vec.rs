@@ -1,6 +1,6 @@
 //! Defines a faster Vector datatype for graphics use.
 
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// A vector with anywhere between 1 and 4 elements.
 /// This struct is much faster than using the native Rust `Vec` type since `Vec` requires memory allocations for all vectors,
@@ -22,10 +22,7 @@ impl Vector {
         assert!(len > 0);
         assert!(len < 5);
 
-        Vector {
-            v: [0.0; 4],
-            len
-        }
+        Vector { v: [0.0; 4], len }
     }
 
     /// Returns a vector with all elements set to `s` and of size `len`.
@@ -33,10 +30,7 @@ impl Vector {
         assert!(len > 0);
         assert!(len < 5);
 
-        Vector {
-            v: [s; 4],
-            len
-        }
+        Vector { v: [s; 4], len }
     }
 
     /// Returns a vector created from array `arr` and of size `len`.
@@ -44,10 +38,7 @@ impl Vector {
         assert!(len > 0);
         assert!(len < 5);
 
-        Vector {
-            v: arr,
-            len
-        }
+        Vector { v: arr, len }
     }
 
     /// Returns a vector created from regular Rust vector `vec` with a size between 1 and 4.
@@ -57,7 +48,7 @@ impl Vector {
 
         Vector {
             v: [vec[0], vec[1], vec[2], vec[3]],
-            len: vec.len()
+            len: vec.len(),
         }
     }
 
@@ -65,7 +56,7 @@ impl Vector {
     pub fn from_3(x: f32, y: f32, z: f32) -> Vector {
         Vector {
             v: [x, y, z, 0.0],
-            len: 3
+            len: 3,
         }
     }
 
@@ -73,7 +64,6 @@ impl Vector {
     pub fn len(&self) -> usize {
         self.len
     }
-
 
     /// Returns true if the vector is empty, which should never happen.
     pub fn is_empty(&self) -> bool {
@@ -88,7 +78,6 @@ impl Vector {
         for i in 0..self.len {
             sum += self.v[i] * rhs.v[i];
         }
-        
         sum
     }
 
@@ -97,14 +86,18 @@ impl Vector {
         let mag = self.dot(self).sqrt();
 
         Vector {
-            v: [self.v[0] / mag, self.v[1] / mag, self.v[2] / mag, self.v[3] / mag],
+            v: [
+                self.v[0] / mag,
+                self.v[1] / mag,
+                self.v[2] / mag,
+                self.v[3] / mag,
+            ],
             len: self.len,
         }
     }
 
     /// Returns a vector with all elements clamped to the range [min, max].
     pub fn clamp(self, min: f32, max: f32) -> Vector {
-
         let mut ret = Vector {
             v: [0.0, 0.0, 0.0, 0.0],
             len: self.len,
@@ -174,7 +167,6 @@ impl Vector {
     /// I and N should be pointing in the same direction and have the same length.
     pub fn refl(i: Vector, n: Vector) -> Vector {
         assert!(i.len() == n.len());
-        
         // compute R = 2 * N * dot(N, I) - I
         let s = n.dot(i) * 2.0;
         Vector::from_s(s, i.len()).mul(n).sub(i)
@@ -188,7 +180,12 @@ impl Add<Vector> for Vector {
         assert!(self.len == rhs.len);
 
         Vector {
-            v: [self.v[0] + rhs.v[0], self.v[1] + rhs.v[1], self.v[2] + rhs.v[2], self.v[3] + rhs.v[3]],
+            v: [
+                self.v[0] + rhs.v[0],
+                self.v[1] + rhs.v[1],
+                self.v[2] + rhs.v[2],
+                self.v[3] + rhs.v[3],
+            ],
             len: self.len,
         }
     }
@@ -201,7 +198,12 @@ impl Sub<Vector> for Vector {
         assert!(self.len == rhs.len);
 
         Vector {
-            v: [self.v[0] - rhs.v[0], self.v[1] - rhs.v[1], self.v[2] - rhs.v[2], self.v[3] - rhs.v[3]],
+            v: [
+                self.v[0] - rhs.v[0],
+                self.v[1] - rhs.v[1],
+                self.v[2] - rhs.v[2],
+                self.v[3] - rhs.v[3],
+            ],
             len: self.len,
         }
     }
@@ -214,7 +216,12 @@ impl Mul<Vector> for Vector {
         assert!(self.len == rhs.len);
 
         Vector {
-            v: [self.v[0] * rhs.v[0], self.v[1] * rhs.v[1], self.v[2] * rhs.v[2], self.v[3] * rhs.v[3]],
+            v: [
+                self.v[0] * rhs.v[0],
+                self.v[1] * rhs.v[1],
+                self.v[2] * rhs.v[2],
+                self.v[3] * rhs.v[3],
+            ],
             len: self.len,
         }
     }
@@ -227,7 +234,12 @@ impl Div<Vector> for Vector {
         assert!(self.len == rhs.len);
 
         Vector {
-            v: [self.v[0] / rhs.v[0], self.v[1] / rhs.v[1], self.v[2] / rhs.v[2], self.v[3] / rhs.v[3]],
+            v: [
+                self.v[0] / rhs.v[0],
+                self.v[1] / rhs.v[1],
+                self.v[2] / rhs.v[2],
+                self.v[3] / rhs.v[3],
+            ],
             len: self.len,
         }
     }
@@ -248,7 +260,7 @@ impl PartialEq for Vector {
     fn eq(&self, other: &Vector) -> bool {
         for i in 0..self.len() {
             if self.v[i] != other.v[i] {
-                return false
+                return false;
             }
         }
 

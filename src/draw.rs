@@ -62,7 +62,6 @@ pub fn draw_line(buf: &mut Vec<Color>, rlen: usize, start: (i32, i32), end: (i32
         }
 
         let e2 = 2 * err;
-        
         if e2 >= dy {
             err += dy;
             x += sx;

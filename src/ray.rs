@@ -1,7 +1,7 @@
 //! Controls how rays interact with shapes.
 
+use crate::render::{any_hit, closest_hit};
 use crate::vec::*;
-use crate::render::{closest_hit, any_hit};
 
 /// Defines how a light can behave.
 pub enum LightType {
@@ -74,11 +74,10 @@ impl RayInteraction for Plane {
             let t = self.n.dot(r.o - self.p) / self.n.dot(-r.d);
 
             if _t.0 < t && t < _t.1 {
-                return HitType::Hit(t)
+                return HitType::Hit(t);
             } else {
-                return HitType::Miss()
+                return HitType::Miss();
             }
-            
         }
         HitType::Miss()
     }
@@ -106,7 +105,6 @@ impl RayInteraction for Sphere {
     /// Checks if ray `r` hits sphere `s` at time `t`.
     fn hit(&self, r: &Ray, t: (f32, f32)) -> HitType {
         let a = r.d.dot(r.d);
-        
         let oc = r.o - self.c;
         let b = 2.0 * oc.dot(r.d);
 
@@ -154,8 +152,13 @@ impl RayInteraction for Sphere {
 
 /// Runs lighting calculations at point `p` for the object at index `i`.
 /// `num_refl` determines the maximum recursion depth reflections.
-pub fn light(obj_idx: usize, objs: &[Box<dyn RayInteraction>], p: &Vector, l: &Light, num_refl: u32) -> Vector {
-
+pub fn light(
+    obj_idx: usize,
+    objs: &[Box<dyn RayInteraction>],
+    p: &Vector,
+    l: &Light,
+    num_refl: u32,
+) -> Vector {
     let lc = l.color;
 
     // calculate vector going _to_ the light source
@@ -177,8 +180,8 @@ pub fn light(obj_idx: usize, objs: &[Box<dyn RayInteraction>], p: &Vector, l: &L
 
     // if the ray going to the light hits another object, point p is in shadow
     // avoid edge case where object hits itself by using a small offset from 0 for t
-    if let Some((_, _)) = any_hit(&Ray {o: *p, d: lv}, objs, (0.01, max)) {
-        return Vector::zero(3) // no light contribution if in shadow
+    if let Some((_, _)) = any_hit(&Ray { o: *p, d: lv }, objs, (0.01, max)) {
+        return Vector::zero(3); // no light contribution if in shadow
     }
 
     let i = lv.norm();
@@ -189,7 +192,6 @@ pub fn light(obj_idx: usize, objs: &[Box<dyn RayInteraction>], p: &Vector, l: &L
     color = diff_v * color * l.color;
 
     let r = Vector::refl(lv, n); // calculate reflected vector off normal
-    
     let np = -*p; // negative p, or a vector to the camera
     let spec_dot = r.norm().dot(np.norm());
     if m.spec > 0.0 && spec_dot > 0.0 {
@@ -203,10 +205,7 @@ pub fn light(obj_idx: usize, objs: &[Box<dyn RayInteraction>], p: &Vector, l: &L
 
     if num_refl > 0 && m.refl > 0.0 {
         let r = Vector::refl(lv, obj.normal(p));
-        let ref_ray = Ray {
-            o: *p,
-            d: r,
-        };
+        let ref_ray = Ray { o: *p, d: r };
 
         // if object is reflective and we can recurse more, calculate lighting on reflection
         if let Some((i2, p2)) = closest_hit(&ref_ray, objs, (0.01, f32::INFINITY)) {

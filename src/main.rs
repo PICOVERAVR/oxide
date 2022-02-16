@@ -2,18 +2,17 @@ mod config;
 
 use std::fs::File;
 use std::io::Write;
-use std::{time, env};
+use std::{env, time};
 
 // this call ensures that we're using the library version of the functions rather than including them in the binary and library
 // if this is failing, make sure to run "cargo clean" if you built everything as a binary
-use oxide::{render, mat, draw};
+use oxide::{draw, mat, render};
 
 fn main() -> std::io::Result<()> {
-
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
         println!("usage: oxide <config file>");
-        return Ok(())
+        return Ok(());
     }
 
     let path = &args[1];
@@ -27,7 +26,6 @@ fn main() -> std::io::Result<()> {
 
     let out_parts: Vec<&str> = path.split('.').collect();
     let out_path = String::from(out_parts[0]) + ".ppm";
-    
     let mut file = File::create(out_path)?; // "?" unpacks the result if Ok and returns the error if not
     file.write_all(header.as_bytes())?;
 
@@ -45,7 +43,6 @@ fn main() -> std::io::Result<()> {
 
     let dt = (h / cfg.render.threads as usize) as i32;
     let start = -(h as i32) / 2 + dt / 2;
-    
     let clock = time::Instant::now();
 
     m_parts.push(render::render(
@@ -53,7 +50,7 @@ fn main() -> std::io::Result<()> {
         (w, dt as usize),
         &spheres,
         &lights,
-        &cfg
+        &cfg,
     ));
 
     m_parts.push(render::render(
@@ -61,13 +58,12 @@ fn main() -> std::io::Result<()> {
         (w, dt as usize),
         &spheres,
         &lights,
-        &cfg
+        &cfg,
     ));
 
     let time = clock.elapsed();
-    
-    eprintln!("done ({}.{:03} sec)\n", time.as_secs(), time.as_millis());    
 
+    eprintln!("done ({}.{:03} sec)\n", time.as_secs(), time.as_millis());
     let get_bytes = |m: mat::Matrix<draw::Color>| -> Vec<u8> {
         let size = (m.rlen - 1) * (m.clen - 1) * 3;
         let mut buf: Vec<u8> = Vec::with_capacity(size);
@@ -75,9 +71,7 @@ fn main() -> std::io::Result<()> {
         for y in 1..m.clen {
             for x in 0..m.rlen - 1 {
                 let idx = x + y * (m.rlen - 1);
-    
                 let c = m.mat[idx];
-    
                 buf.push(c.r);
                 buf.push(c.g);
                 buf.push(c.b);

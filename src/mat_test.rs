@@ -60,7 +60,7 @@ mod tests {
             clen: 2,
         };
 
-        let m_exp = Matrix { 
+        let m_exp = Matrix {
             mat: vec! [
                 13.0, 20.0, 13.0,
                 33.0, 42.0, 31.0,

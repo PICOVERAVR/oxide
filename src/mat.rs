@@ -53,7 +53,7 @@ pub fn row<T>(m: &Matrix<T>, n: usize) -> Vec<T>
 }
 
 // multiply two matrices inefficiently
-pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T> 
+pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>
     where T: Float
     {
     let mut ret = Matrix {
@@ -75,7 +75,7 @@ pub fn matmul<T>(lhs: &Matrix<T>, rhs: &Matrix<T>) -> Matrix<T>
 
 // append the contents of matrix app to the vector v
 // excluding the first cut.0 rows and the last cut.1 columns
-pub fn cut<T>(app: &Matrix<T>, cut: (usize, usize)) -> Vec<T> 
+pub fn cut<T>(app: &Matrix<T>, cut: (usize, usize)) -> Vec<T>
     where T: Copy {
     let mut v = vec![];
 
