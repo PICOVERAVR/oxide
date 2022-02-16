@@ -46,12 +46,87 @@ pub fn any_hit(
     None
 }
 
+/// Runs lighting calculations at point `p` for the object at index `i`.
+/// `num_refl` determines the maximum recursion depth reflections.
+pub fn light(
+    idx: usize,
+    set: &[Box<dyn RayInteraction>],
+    p: &Vector,
+    l: &Light,
+    num_refl: u32,
+) -> Vector {
+    let lc = l.color;
+
+    // calculate vector going _to_ the light source
+    let lv = match &l.kind {
+        LightType::Point(lp) => *lp - *p,
+        LightType::Directional(ldir) => *ldir,
+        LightType::Ambient => return lc,
+    };
+
+    let max = match l.kind {
+        LightType::Directional(_) => f32::INFINITY, // no max t for directional lights
+        _ => 0.99, // don't test for shadows beyond the light origin for point lights
+    };
+
+    let obj = &set[idx];
+
+    let m = obj.material(p);
+    let mut color = m.color;
+
+    // if the ray going to the light hits another object, point p is in shadow
+    // avoid edge case where object hits itself by using a small offset from 0 for t
+    if let Some((_, _)) = any_hit(&Ray { o: *p, d: lv }, set, (0.01, max)) {
+        return Vector::zero(3); // no light contribution if in shadow
+    }
+
+    let i = lv.norm();
+    let n = obj.normal(p);
+
+    let diff = n.dot(i).max(0.0);
+    let diff_v = Vector::from_s(diff, 3);
+    color = diff_v * color * l.color;
+
+    let r = Vector::refl(lv, n); // calculate reflected vector off normal
+    let np = -*p; // negative p, or a vector to the camera
+    let spec_dot = r.norm().dot(np.norm());
+    if m.spec > 0.0 && spec_dot > 0.0 {
+        // diff * color + spec
+        let spec_v = Vector::from_s(spec_dot.powf(m.spec), 3);
+        let specc = spec_v * lc; // specular color depends on light source
+        color = color + specc;
+    }
+
+    color.clamp(0.0, 1.0); // clamp color to proper range
+
+    if num_refl > 0 && m.refl > 0.0 {
+        let r = Vector::refl(lv, obj.normal(p));
+        let ref_ray = Ray { o: *p, d: r };
+
+        // if object is reflective and we can recurse more, calculate lighting on reflection
+        if let Some((i2, p2)) = closest_hit(&ref_ray, set, (0.01, f32::INFINITY)) {
+            let ref_l = Light {
+                color,
+                kind: LightType::Point(*p),
+            };
+
+            let ref_color = light(i2, set, &p2, &ref_l, num_refl - 1);
+
+            // if we reflect off the object and hit something, compute the light for that:
+            // color = color * (1 - refl) + ref_color * refl
+            color = ref_color * Vector::from_s(m.refl, 3) + color * Vector::from_s(1.0 - m.refl, 3);
+        }
+    }
+
+    color
+}
+
 /// Renders a scene containing objects in `objs`, lights in `lights`, and configuration information in `cfg`.
 /// Returns a Matrix of colors representing RGB values of the final image.
 pub fn render(
     start: (i32, i32),
     dims: (usize, usize),
-    objs: &[Box<dyn RayInteraction>],
+    set: &[Box<dyn RayInteraction>],
     lights: &[Light],
     cfg: &Config,
 ) -> Matrix<Color> {
@@ -96,14 +171,15 @@ pub fn render(
                 d: view_coord, // can adjust rotation by multiplying by rotation matrix here
             };
 
-            if let Some((i, p)) = closest_hit(&v_ray, objs, (view_dist, f32::INFINITY)) {
+            if let Some((i, p)) = closest_hit(&v_ray, set, (view_dist, f32::INFINITY)) {
                 let mut color_v = Vector::zero(3);
+
                 for l in lights {
-                    color_v = color_v + light(i, objs, &p, l, cfg.render.max_reflections);
+                    color_v = color_v + light(i, set, &p, l, cfg.render.max_reflections);
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color
-                let color_v = (objs[i].material(&p).color * color_v).clamp(0.0, 1.0);
+                let color_v = (set[i].material(&p).color * color_v).clamp(0.0, 1.0);
                 draw_pixel(&mut buf, (x, y), dims, map_color(color_v));
             }
         }

@@ -17,6 +17,7 @@ Example renders over time are shown in the `outputs` directory.
 
 ## TODOs
 - multithreading
+- MSAA
 - faster execution
   - cross platform SIMD is in nightly
   - platform specific SIMD requires macro stuff and basically having two copies of vec.rs
