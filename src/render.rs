@@ -10,7 +10,7 @@ use crate::vec::*;
 /// Returns `None` if nothing hits.
 pub fn closest_hit(
     r: &Ray,
-    objs: &[Box<dyn RayInteraction>],
+    objs: &[Box<dyn RayInteraction + Send + Sync>],
     lim: (f32, f32),
 ) -> Option<(usize, Vector)> {
     let mut best_t = f32::INFINITY;
@@ -33,7 +33,7 @@ pub fn closest_hit(
 /// Returns `None` if nothing hits.
 pub fn any_hit(
     r: &Ray,
-    objs: &[Box<dyn RayInteraction>],
+    objs: &[Box<dyn RayInteraction + Send + Sync>],
     lim: (f32, f32),
 ) -> Option<(usize, Vector)> {
     for (i, obj) in objs.iter().enumerate() {
@@ -50,7 +50,7 @@ pub fn any_hit(
 /// `num_refl` determines the maximum recursion depth reflections.
 pub fn light(
     idx: usize,
-    set: &[Box<dyn RayInteraction>],
+    set: &[Box<dyn RayInteraction + Send + Sync>],
     p: &Vector,
     l: &Light,
     num_refl: u32,
@@ -126,7 +126,7 @@ pub fn light(
 pub fn render(
     start: (i32, i32),
     dims: (usize, usize),
-    set: &[Box<dyn RayInteraction>],
+    set: &[Box<dyn RayInteraction + Send + Sync>],
     lights: &[Light],
     cfg: &Config,
 ) -> Matrix<Color> {
@@ -138,12 +138,14 @@ pub fn render(
 
     // adding an extra row and column to make canvas bounds symmetrical
     let pixels = dims.0 * dims.1 + dims.0 + dims.1 + 1;
+    let bg = cfg.world.background.get();
+
     let mut buf = Matrix {
         mat: vec![
             Color {
-                r: 255,
-                g: 255,
-                b: 255
+                r: (bg[0] * 255.0) as u8,
+                g: (bg[1] * 255.0) as u8,
+                b: (bg[2] * 255.0) as u8
             };
             pixels
         ],

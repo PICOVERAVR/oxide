@@ -7,7 +7,11 @@ use std::collections::HashMap;
 use std::fs;
 use toml::Value;
 
-type Triple = (Config, Vec<Box<dyn RayInteraction>>, Vec<Light>);
+type Triple = (
+    Config,
+    Vec<Box<dyn RayInteraction + Send + Sync>>,
+    Vec<Light>,
+);
 
 /// Turns a .toml scene configuration file into a config struct.
 /// The file `test_scene.toml` is pretty self-documenting, so check that for details.
@@ -28,7 +32,7 @@ pub fn read_cfg(path: &str) -> Option<Triple> {
 
     // keep materials we've seen in a hash map for quick access
     let mut mats = HashMap::new();
-    let mut objs: Vec<Box<dyn RayInteraction>> = vec![];
+    let mut objs: Vec<Box<dyn RayInteraction + Send + Sync>> = vec![];
     let mut lights = vec![];
 
     // turn a .toml array into a Vector with 3 elements
@@ -102,17 +106,27 @@ pub fn read_cfg(path: &str) -> Option<Triple> {
             "world" => {
                 c.world = World {
                     cam_pos: get_v3(&v, "camera_position"),
+                    background: get_v3(&v, "background"),
                 }
             }
             "render" => {
+                let threads;
+                if v["threads"].is_integer() {
+                    threads = v["threads"]
+                        .as_integer()
+                        .expect("could not cast into integer") as u32;
+                } else if v["threads"].as_str().unwrap() == "auto" {
+                    threads = num_cpus::get() as u32;
+                } else {
+                    panic!("unknown thread string value");
+                }
+
                 c.render = Render {
                     max_reflections: v["max_reflections"]
                         .as_integer()
                         .expect("could not cast into integer")
                         as u32,
-                    threads: v["threads"]
-                        .as_integer()
-                        .expect("could not cast into integer") as u32,
+                    threads,
                 }
             }
             "output" => {

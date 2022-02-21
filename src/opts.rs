@@ -28,6 +28,7 @@ pub struct Render {
 pub struct World {
     /// Position of the camera in the scene.
     pub cam_pos: Vector,
+    pub background: Vector,
 }
 
 /// Overall struct holding all configuration parameters.

@@ -4,17 +4,18 @@ height = 800
 bits = 8
 
 [render]
-max_reflections = 3
-threads = 2
+max_reflections = 3 # maximum number of reflections for a ray
+threads = "auto"
 
 [world]
-camera_position = [0.0, 0.0, 0.0]
+camera_position = [0.0, 0.0, -1.0] # +x = right, +y = up, +z = forward
+background = [0.0, 0.0, 0.0] # background color
 
 [materials]
     [materials.white]
-    color = [1.0, 1.0, 1.0]
-    spec = 250.0
-    refl = 0.8
+    color = [1.0, 1.0, 1.0] # base color
+    spec = 250.0 # specular reflection exponent
+    refl = 0.8 # "reflection index" (0 = no reflection, 1 = perfect reflection)
 
     [materials.red]
     color = [1.0, 0.0, 0.0]

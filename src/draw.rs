@@ -13,12 +13,16 @@ pub struct Color {
 
 /// Draws a pixel on `ppm`.
 /// `x` and `y` are coordinates going from `-len.0/2` to `len.0/2` and `-len.1/2` to `len.1/2` respectively, where `len` is the canvas size.
+/// Calls where `pixel.0` or `pixel.1` maps to a value outside the corresponding limit in `len` will be silently ignored.
 pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), len: (usize, usize), color: Color) {
     // convert bounds from [-n/2, n/2] to [0, n]
     let ax = pixel.0 + len.0 as i32 / 2;
     let ay = -pixel.1 + len.1 as i32 / 2; // y direction needs to be flipped because the canvas y direction goes top to bottom
 
-    ppm.mat[ay as usize * len.0 + ax as usize] = color;
+    // writes outside bounds are not currently used but might be helpful for postprocessing later
+    if ax <= len.0 as i32 && ay <= len.1 as i32 {
+        ppm.mat[ay as usize * len.0 + ax as usize] = color;
+    }
 }
 
 /// Maps a float vector to a concrete color type.

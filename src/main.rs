@@ -8,6 +8,9 @@ use std::{env, time};
 // if this is failing, make sure to run "cargo clean" if you built everything as a binary
 use oxide::{draw, mat, render};
 
+use std::sync::Arc;
+use std::thread;
+
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
@@ -17,7 +20,7 @@ fn main() -> std::io::Result<()> {
 
     let path = &args[1];
 
-    let (cfg, spheres, lights) = config::read_cfg(path).expect("could not import config file");
+    let (cfg, objs, lights) = config::read_cfg(path).expect("could not import config file");
 
     let w = cfg.output.width;
     let h = cfg.output.height;
@@ -30,36 +33,48 @@ fn main() -> std::io::Result<()> {
     file.write_all(header.as_bytes())?;
 
     // print to stderr so output isn't buffered until the end
-    eprintln!("\nrender dimensions: {} x {}", w, h);
+    eprintln!(
+        "\nrender dimensions: {} x {} across {} threads",
+        w, h, cfg.render.threads
+    );
     eprintln!("rendering... ");
 
     // split the render into vertical slices and divide amongst threads
     // (horizontal slices are harder to collapse together)
 
-    // TODO: come back to threading after learning about Arc<T>?
-    // since the closure we pass to thread::spawn has static lifetime
-
     let mut m_parts = vec![];
+    let mut handles = vec![];
 
     let dt = (h / cfg.render.threads as usize) as i32;
     let start = -(h as i32) / 2 + dt / 2;
     let clock = time::Instant::now();
 
-    m_parts.push(render::render(
-        (0, start),
-        (w, dt as usize),
-        &spheres,
-        &lights,
-        &cfg,
-    ));
+    // wrap shared objects in Arc so the last thread to use em also deletes em
+    let cfg = Arc::new(cfg);
+    let lights = Arc::new(lights);
+    let objs = Arc::new(objs);
 
-    m_parts.push(render::render(
-        (0, start + dt),
-        (w, dt as usize),
-        &spheres,
-        &lights,
-        &cfg,
-    ));
+    for i in 0..cfg.render.threads {
+        // increase ref count of shared objects
+        let objs_c = Arc::clone(&objs);
+        let lights_c = Arc::clone(&lights);
+        let cfg_c = Arc::clone(&cfg);
+
+        // launch thread and store handle for later
+        handles.push(thread::spawn(move || -> mat::Matrix<draw::Color> {
+            render::render(
+                (0, start + dt * i as i32),
+                (w, dt as usize),
+                &objs_c,
+                &lights_c,
+                &cfg_c,
+            )
+        }));
+    }
+
+    for h in handles {
+        m_parts.push(h.join().expect("child thread panicked"));
+    }
 
     let time = clock.elapsed();
 
