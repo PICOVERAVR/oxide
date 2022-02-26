@@ -55,7 +55,6 @@ impl PNG {
         };
 
         enc.set_depth(depth);
-        enc.set_trns(vec![0xFF, 0xFF, 0xFF, 0xFF]);
 
         // optimize sRGB gamma for output device gamut vs absolute color accuracy
         enc.set_srgb(png::SrgbRenderingIntent::Perceptual);

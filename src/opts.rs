@@ -2,7 +2,7 @@
 
 use crate::vec::Vector;
 
-/// List of possible formats for render output. PNG is recommended if no other format is needed.
+/// List of possible formats for render output. PNG is recommended.
 pub enum Format {
     Ppm,
     Png,
