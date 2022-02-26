@@ -17,6 +17,8 @@ Run `$ oxide test_scene.toml` to render a test scene. The resulting render will 
 Example renders over time are shown in the `outputs` directory.
 
 ## TODOs
+- .png output
+- .qoi output
 - MSAA
 - refraction
 - faster execution

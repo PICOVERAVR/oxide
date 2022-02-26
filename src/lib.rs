@@ -6,5 +6,6 @@ mod mat_test;
 
 pub mod draw;
 pub mod opts;
+pub mod output;
 pub mod ray;
 pub mod render;

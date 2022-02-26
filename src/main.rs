@@ -1,12 +1,11 @@
 mod config;
 
-use std::fs::File;
-use std::io::Write;
 use std::{env, time};
 
 // this call ensures that we're using the library version of the functions rather than including them in the binary and library
 // if this is failing, make sure to run "cargo clean" if you built everything as a binary
-use oxide::{draw, mat, render};
+use oxide::output::*;
+use oxide::{draw, mat, opts, render};
 
 use std::sync::Arc;
 use std::thread;
@@ -25,12 +24,7 @@ fn main() -> std::io::Result<()> {
     let w = cfg.output.width;
     let h = cfg.output.height;
 
-    let header = format!("P6 {} {} {}\n", w, h, 2u32.pow(cfg.output.bits) - 1);
-
     let out_parts: Vec<&str> = path.split('.').collect();
-    let out_path = String::from(out_parts[0]) + ".ppm";
-    let mut file = File::create(out_path)?; // "?" unpacks the result if Ok and returns the error if not
-    file.write_all(header.as_bytes())?;
 
     // print to stderr so output isn't buffered until the end
     eprintln!(
@@ -104,7 +98,18 @@ fn main() -> std::io::Result<()> {
 
     assert_eq!(bvec.len(), w * h * 3);
 
-    file.write_all(&bvec)?;
+    let path_pre = String::from(out_parts[0]);
+
+    match cfg.output.format {
+        opts::Format::Ppm => {
+            let mut out_img = PPM::new(path_pre + ".ppm", w, h, cfg.output.bits);
+            out_img.write(&bvec);
+        }
+        opts::Format::Png => {
+            let mut out_img = PNG::new(path_pre + ".png", w, h, cfg.output.bits);
+            out_img.write(&bvec);
+        }
+    }
 
     Ok(())
 }

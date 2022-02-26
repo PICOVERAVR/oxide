@@ -5,6 +5,7 @@ use oxide::ray::{Light, LightType, Material, Plane, RayInteraction, Sphere};
 use oxide::vec::Vector;
 use std::collections::HashMap;
 use std::fs;
+use std::thread;
 use toml::Value;
 
 type Triple = (
@@ -114,9 +115,12 @@ pub fn read_cfg(path: &str) -> Option<Triple> {
                 if v["threads"].is_integer() {
                     threads = v["threads"]
                         .as_integer()
-                        .expect("could not cast into integer") as u32;
+                        .expect("could not cast into integer")
+                        as usize;
                 } else if v["threads"].as_str().unwrap() == "auto" {
-                    threads = num_cpus::get() as u32;
+                    threads = thread::available_parallelism()
+                        .expect("could not discover number of threads")
+                        .get();
                 } else {
                     panic!("unknown thread string value");
                 }
@@ -130,14 +134,28 @@ pub fn read_cfg(path: &str) -> Option<Triple> {
                 }
             }
             "output" => {
+                let fmt = match v["format"].as_str().expect("could not cast into string") {
+                    "png" => Format::Png,
+                    "ppm" => Format::Ppm,
+                    _ => panic!("unknown image format"),
+                };
+
+                let bits = v["bits"].as_integer().expect("could not cast into integer") as usize;
+
+                // only 8 bits supported for now
+                if bits != 8 {
+                    panic!("invalid bit depth");
+                }
+
                 c.output = Output {
+                    format: fmt,
                     width: v["width"]
                         .as_integer()
                         .expect("could not cast into integer") as usize,
                     height: v["height"]
                         .as_integer()
                         .expect("could not cast into integer") as usize,
-                    bits: v["bits"].as_integer().expect("could not cast into integer") as u32,
+                    bits,
                 }
             }
             _ => panic!("unknown key!"),

@@ -2,15 +2,29 @@
 
 use crate::vec::Vector;
 
+/// List of possible formats for render output. PNG is recommended if no other format is needed.
+pub enum Format {
+    Ppm,
+    Png,
+}
+
+impl Default for Format {
+    fn default() -> Format {
+        Format::Png
+    }
+}
+
 /// Contains information regarding the output format of the image.
 #[derive(Default)]
 pub struct Output {
+    /// Format of the resulting image.
+    pub format: Format,
     /// Width of the resulting image.
     pub width: usize,
     /// Height of the resulting image.
     pub height: usize,
     /// Number of bits per channel in the resulting image.
-    pub bits: u32,
+    pub bits: usize,
 }
 
 /// Contains parameters for how to render the scene.
@@ -20,7 +34,7 @@ pub struct Render {
     pub max_reflections: u32,
 
     /// Number of threads to use to render everything.
-    pub threads: u32,
+    pub threads: usize,
 }
 
 /// Contains information on scene information.
