@@ -149,12 +149,13 @@ pub fn render(
             };
             pixels
         ],
-        rlen: dims.0 as usize + 1, // write increased bounds to matrix dimensions as well, since we don't use it here
+        rlen: dims.0 as usize + 1,
         clen: dims.1 as usize + 1,
     };
 
-    for y in -di.1 / 2..di.1 / 2 {
-        for x in -di.0 / 2..di.0 / 2 {
+    for y in -di.1 / 2..di.1 / 2 + 1 {
+        // need to write to _full_ matrix here - the last row is cut off in main() when we collect the results of all threads
+        for x in -di.0 / 2..di.0 / 2 + 1 {
             let xf = x as f32;
             let yf = y as f32;
 

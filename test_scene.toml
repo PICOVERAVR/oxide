@@ -1,7 +1,7 @@
 [output]
 format = "png" # supported values: "ppm", "png"
-width = 1200
-height = 800
+width = 3840
+height = 2160
 bits = 8 # only 8 bits supported for now
 
 [render]
@@ -9,7 +9,7 @@ max_reflections = 3 # maximum number of reflections for a ray
 threads = "auto" # manually set number of threads or "auto" to auto-detect
 
 [world]
-camera_position = [0.0, 0.0, -1.0] # +x = right, +y = up, +z = forward
+camera_position = [0.0, 0.0, 0.0] # +x = right, +y = up, +z = forward
 background = [0.0, 0.0, 0.0] # background color
 
 [materials]

@@ -28,25 +28,27 @@ fn main() -> std::io::Result<()> {
 
     // print to stderr so output isn't buffered until the end
     eprintln!(
-        "\nrender dimensions: {} x {} across {} threads",
+        "\nrender dimensions: {} x {} across {} thread(s)",
         w, h, cfg.render.threads
     );
-    eprintln!("rendering... ");
-
     // split the render into vertical slices and divide amongst threads
     // (horizontal slices are harder to collapse together)
 
     let mut m_parts = vec![];
     let mut handles = vec![];
 
-    let dt = (h / cfg.render.threads as usize) as i32;
-    let start = -(h as i32) / 2 + dt / 2;
-    let clock = time::Instant::now();
-
     // wrap shared objects in Arc so the last thread to use em also deletes em
     let cfg = Arc::new(cfg);
     let lights = Arc::new(lights);
     let objs = Arc::new(objs);
+
+    let dt = (h / cfg.render.threads as usize) as i32;
+    let start = -(h as i32) / 2 + dt / 2;
+
+    eprintln!("launching grid of {}x{} pixels per thread", w, dt);
+    eprintln!("rendering... ");
+
+    let clock = time::Instant::now();
 
     for i in 0..cfg.render.threads {
         // increase ref count of shared objects
@@ -84,7 +86,10 @@ fn main() -> std::io::Result<()> {
                 buf.push(c.r);
                 buf.push(c.g);
                 buf.push(c.b);
+
+                //print!("({:02x}, {:02x}, {:02x}) ", c.r, c.g, c.b);
             }
+            //println!();
         }
 
         buf
