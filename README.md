@@ -1,12 +1,12 @@
 # oxide
 
-A simple CPU renderer in Rust based on [Computer Graphics from Scratch](https://gabrielgambetta.com/computer-graphics-from-scratch).
+A simple CPU renderer in Rust developed from the book [Computer Graphics from Scratch](https://gabrielgambetta.com/computer-graphics-from-scratch).
 
 ## Usage
-Run `$ oxide test_scene.toml` to render a test scene. The resulting render will be named `test_scene.ppm`.
+Run `$ oxide test_scene.toml` to render a test scene. The resulting render will be named `test_scene.png`.
 
 ## Features
-- .ppm output
+- .ppm and .png output
 - Phong lighting (ambient, diffuse, and specular lighting)
 - Directional, point, and ambient lights
 - Reflections of arbitrary depth
@@ -17,7 +17,6 @@ Run `$ oxide test_scene.toml` to render a test scene. The resulting render will 
 Example renders over time are shown in the `outputs` directory.
 
 ## TODOs
-- .png output
 - .qoi output
 - MSAA
 - refraction
