@@ -26,11 +26,6 @@ fn main() -> std::io::Result<()> {
 
     let out_parts: Vec<&str> = path.split('.').collect();
 
-    // print to stderr so output isn't buffered until the end
-    eprintln!(
-        "\nrender dimensions: {} x {} across {} thread(s)",
-        w, h, cfg.render.threads
-    );
     // split the render into vertical slices and divide amongst threads
     // (horizontal slices are harder to collapse together)
 
@@ -42,15 +37,24 @@ fn main() -> std::io::Result<()> {
     let lights = Arc::new(lights);
     let objs = Arc::new(objs);
 
-    let dt = (h / cfg.render.threads as usize) as i32;
+    // if the rendered image is small (or the machine is massive), clamp max # threads
+    let min_threads = std::cmp::min(cfg.render.threads, h);
+
+    let dt = (h / min_threads as usize) as i32;
     let start = -(h as i32) / 2 + dt / 2;
 
-    eprintln!("launching grid of {}x{} pixels per thread", w, dt);
+    // print to stderr so output isn't buffered until the end
+    eprintln!(
+        "\nrender parameters: {} x {}, {} thread(s) ({} x {} pixels per thread)",
+        w, h, min_threads, w, dt
+    );
     eprintln!("rendering... ");
 
     let clock = time::Instant::now();
 
-    for i in 0..cfg.render.threads {
+    let mut curr_h: usize = 0;
+
+    for i in 0..min_threads {
         // increase ref count of shared objects
         let objs_c = Arc::clone(&objs);
         let lights_c = Arc::clone(&lights);
@@ -59,14 +63,41 @@ fn main() -> std::io::Result<()> {
         // launch thread and store handle for later
         handles.push(thread::spawn(move || -> mat::Matrix<draw::Color> {
             render::render(
-                (0, start + dt * i as i32),
-                (w, dt as usize),
+                (0, start + dt * i as i32), // midpoints of subsection
+                (w, dt as usize),           // width and height of subsection
                 &objs_c,
                 &lights_c,
                 &cfg_c,
             )
         }));
+
+        curr_h += dt as usize;
     }
+
+    if h % min_threads != 0 {
+        // need an extra thread here to handle remaining work
+
+        let objs_c = Arc::clone(&objs);
+        let lights_c = Arc::clone(&lights);
+        let cfg_c = Arc::clone(&cfg);
+
+        let final_dt = h - curr_h;
+
+        // launch thread and store handle for later
+        handles.push(thread::spawn(move || -> mat::Matrix<draw::Color> {
+            render::render(
+                (0, (curr_h + final_dt / 2) as i32), // midpoints of subsection
+                (w, final_dt),                       // width and height of subsection
+                &objs_c,
+                &lights_c,
+                &cfg_c,
+            )
+        }));
+
+        curr_h += final_dt as usize;
+    }
+
+    assert_eq!(curr_h, h);
 
     for h in handles {
         m_parts.push(h.join().expect("child thread panicked"));
@@ -79,17 +110,17 @@ fn main() -> std::io::Result<()> {
         let size = (m.rlen - 1) * (m.clen - 1) * 3;
         let mut buf: Vec<u8> = Vec::with_capacity(size);
 
-        for y in 1..m.clen {
+        for y in 0..m.clen - 1 {
+            // iterate through valid rows (stopping before we hit the last row)
             for x in 0..m.rlen - 1 {
-                let idx = x + y * (m.rlen - 1);
+                // iterate through all columns, skipping invalid (last) one
+                let idx = x + y * (m.rlen - 1) + y;
+
                 let c = m.mat[idx];
                 buf.push(c.r);
                 buf.push(c.g);
                 buf.push(c.b);
-
-                //print!("({:02x}, {:02x}, {:02x}) ", c.r, c.g, c.b);
             }
-            //println!();
         }
 
         buf

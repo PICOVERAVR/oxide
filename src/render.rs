@@ -153,8 +153,9 @@ pub fn render(
         clen: dims.1 as usize + 1,
     };
 
-    for y in -di.1 / 2..di.1 / 2 + 1 {
-        // need to write to _full_ matrix here - the last row is cut off in main() when we collect the results of all threads
+    // rendering 1 extra column here to avoid issues where di.1 / 2 is fractional
+    for y in -di.1 / 2..di.1 / 2 + 2 {
+        // need to write to _full_ symmetric matrix here - the last row and column are cut off in main() when we collect the results of all threads
         for x in -di.0 / 2..di.0 / 2 + 1 {
             let xf = x as f32;
             let yf = y as f32;
@@ -183,7 +184,13 @@ pub fn render(
 
                 // clamp sum of light colors to correct output range and multiply by surface color
                 let color_v = (set[i].material(&p).color * color_v).clamp(0.0, 1.0);
-                draw_pixel(&mut buf, (x, y), dims, map_color(color_v));
+
+                draw_pixel(
+                    &mut buf,
+                    (x, y),
+                    (dims.0 + 1, dims.1 + 1), // use full dimensions to make buffer collection work properly
+                    map_color(color_v),
+                );
             }
         }
     }
