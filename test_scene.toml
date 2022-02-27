@@ -9,8 +9,9 @@ max_reflections = 3 # maximum number of reflections for a ray
 threads = "auto" # manually set number of threads or "auto" to auto-detect
 
 [world]
-camera_position = [0.0, 0.0, 0.0] # +x = right, +y = up, +z = forward
-background = [0.0, 0.0, 0.0] # background color
+camera_position = [0.0, 0.0, -1.0] # +x = right, +y = up, +z = forward
+background = [1.0, 1.0, 1.0] # background color
+fog = [6.0, 24.0] # where to start fog blending and where to replace with fog
 
 [materials]
     [materials.white]

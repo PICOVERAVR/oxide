@@ -5,12 +5,15 @@ A simple CPU renderer in Rust developed from the book [Computer Graphics from Sc
 ## Usage
 Run `$ oxide test_scene.toml` to render a test scene. The resulting render will be named `test_scene.png`.
 
-## Features
-- .ppm and .png output
+## Rendering Features
 - Phong lighting (ambient, diffuse, and specular lighting)
 - Directional, point, and ambient lights
-- Reflections of arbitrary depth
+- Reflections of configurable depth
 - Support for spheres and planes
+- Fog
+
+## Control Features
+- .ppm and .png output
 - Controllable through a TOML configuration file
 - Parallel execution
 

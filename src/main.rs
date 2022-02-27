@@ -40,13 +40,20 @@ fn main() -> std::io::Result<()> {
     // if the rendered image is small (or the machine is massive), clamp max # threads
     let min_threads = std::cmp::min(cfg.render.threads, h);
 
+    // show correct number of threads used in total
+    let disp_threads = if h % min_threads == 0 {
+        min_threads
+    } else {
+        min_threads + 1
+    };
+
     let dt = (h / min_threads as usize) as i32;
     let start = -(h as i32) / 2 + dt / 2;
 
     // print to stderr so output isn't buffered until the end
     eprintln!(
         "\nrender parameters: {} x {}, {} thread(s) ({} x {} pixels per thread)",
-        w, h, min_threads, w, dt
+        w, h, disp_threads, w, dt
     );
     eprintln!("rendering... ");
 
@@ -75,7 +82,7 @@ fn main() -> std::io::Result<()> {
     }
 
     if h % min_threads != 0 {
-        // need an extra thread here to handle remaining work
+        // need an extra thread here to handle remaining work since we can't split work into an even number of rows per thread
 
         let objs_c = Arc::clone(&objs);
         let lights_c = Arc::clone(&lights);

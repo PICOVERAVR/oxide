@@ -17,6 +17,25 @@ impl Vector {
         self.v
     }
 
+    pub fn x(&self) -> f32 {
+        self.v[0]
+    }
+
+    pub fn y(&self) -> f32 {
+        assert!(self.len >= 1);
+        self.v[1]
+    }
+
+    pub fn z(&self) -> f32 {
+        assert!(self.len >= 2);
+        self.v[2]
+    }
+
+    pub fn w(&self) -> f32 {
+        assert!(self.len >= 3);
+        self.v[3]
+    }
+
     /// Returns a zero vector of size `len`.
     pub fn zero(len: usize) -> Vector {
         assert!(len > 0);
@@ -119,9 +138,8 @@ impl Vector {
         ret
     }
 
-    /*
+    /// Returns the smaller of two vectors, element-wise.
     pub fn min(self, rhs: Vector) -> Vector {
-
         let mut ret = Vector {
             v: [0.0, 0.0, 0.0, 0.0],
             len: self.len,
@@ -141,8 +159,8 @@ impl Vector {
         ret
     }
 
+    /// Returns the larger of two vectors, element-wise.
     pub fn max(self, rhs: Vector) -> Vector {
-
         let mut ret = Vector {
             v: [0.0, 0.0, 0.0, 0.0],
             len: self.len,
@@ -161,7 +179,6 @@ impl Vector {
 
         ret
     }
-    */
 
     /// Returns the reflection of `i` off a surface with the normal `n`.
     /// I and N should be pointing in the same direction and have the same length.
@@ -170,6 +187,14 @@ impl Vector {
         // compute R = 2 * N * dot(N, I) - I
         let s = n.dot(i) * 2.0;
         Vector::from_s(s, i.len()).mul(n).sub(i)
+    }
+
+    /// Returns the linear interpolation of `a` and `b` according to `f` according
+    /// to the equation `a * f + b * (1 - f)`.
+    /// `f` is clamped to the range [0, 1].
+    pub fn lerp(a: Vector, b: Vector, f: f32) -> Vector {
+        let f = f.clamp(0.0, 1.0);
+        a * Vector::from_s(f, 3) + b * Vector::from_s(1.0 - f, 3)
     }
 }
 

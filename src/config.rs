@@ -105,9 +105,17 @@ pub fn read_cfg(path: &str) -> Option<Triple> {
                 }
             }
             "world" => {
+                let f_arr = v["fog"].as_array().expect("could not cast into array");
+                let fog = (
+                    f_arr[0].as_float().expect("could not cast into float") as f32,
+                    f_arr[1].as_float().expect("could not cast into float") as f32,
+                );
+                assert!(fog.1 > fog.0);
+
                 c.world = World {
                     cam_pos: get_v3(&v, "camera_position"),
                     background: get_v3(&v, "background"),
+                    fog,
                 }
             }
             "render" => {

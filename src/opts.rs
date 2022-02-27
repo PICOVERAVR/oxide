@@ -42,7 +42,12 @@ pub struct Render {
 pub struct World {
     /// Position of the camera in the scene.
     pub cam_pos: Vector,
+
+    /// Background color.
     pub background: Vector,
+
+    /// Where to start fog blending (`fog.0`) and where to end it (`fog.1`)
+    pub fog: (f32, f32),
 }
 
 /// Overall struct holding all configuration parameters.

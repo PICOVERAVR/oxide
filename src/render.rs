@@ -99,7 +99,7 @@ pub fn light(
 
     color.clamp(0.0, 1.0); // clamp color to proper range
 
-    if num_refl > 0 && m.refl > 0.0 {
+    if num_refl > 0 && m.refl > 0.01 {
         let r = Vector::refl(lv, obj.normal(p));
         let ref_ray = Ray { o: *p, d: r };
 
@@ -183,7 +183,14 @@ pub fn render(
                 }
 
                 // clamp sum of light colors to correct output range and multiply by surface color
-                let color_v = (set[i].material(&p).color * color_v).clamp(0.0, 1.0);
+                let mut color_v = (set[i].material(&p).color * color_v).clamp(0.0, 1.0);
+
+                let z = p.z() - cv.z();
+                let fog = cfg.world.fog;
+                if z > fog.0 {
+                    color_v =
+                        Vector::lerp(cfg.world.background, color_v, (z - fog.0) / (fog.1 - fog.0));
+                }
 
                 draw_pixel(
                     &mut buf,
