@@ -50,10 +50,13 @@ fn main() -> std::io::Result<()> {
     let dt = (h / min_threads as usize) as i32;
     let start = -(h as i32) / 2 + dt / 2;
 
+    let t_x = w;
+    let t_y = dt;
+
     // print to stderr so output isn't buffered until the end
     eprintln!(
         "\nrender parameters: {} x {}, {} thread(s) ({} x {} pixels per thread)",
-        w, h, disp_threads, w, dt
+        w, h, disp_threads, t_x, t_y
     );
     eprintln!("rendering... ");
 
@@ -67,16 +70,23 @@ fn main() -> std::io::Result<()> {
         let lights_c = Arc::clone(&lights);
         let cfg_c = Arc::clone(&cfg);
 
-        // launch thread and store handle for later
-        handles.push(thread::spawn(move || -> mat::Matrix<draw::Color> {
+        let work_fn = move || -> mat::Matrix<draw::Color> {
             render::render(
                 (0, start + dt * i as i32), // midpoints of subsection
-                (w, dt as usize),           // width and height of subsection
+                (t_x, t_y as usize),        // width and height of subsection
                 &objs_c,
                 &lights_c,
                 &cfg_c,
             )
-        }));
+        };
+
+        // launch thread  with useful name and store handle for later
+        handles.push(
+            thread::Builder::new()
+                .name(i.to_string())
+                .spawn(work_fn)
+                .expect("could not spawn thread"),
+        );
 
         curr_h += dt as usize;
     }

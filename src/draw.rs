@@ -11,17 +11,29 @@ pub struct Color {
     pub b: u8,
 }
 
-/// Draws a pixel on `ppm`.
-/// `x` and `y` are coordinates going from `-len.0/2` to `len.0/2` and `-len.1/2` to `len.1/2` respectively, where `len` is the canvas size.
-/// Calls where `pixel.0` or `pixel.1` maps to a value outside the corresponding limit in `len` will be silently ignored.
-pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), len: (usize, usize), color: Color) {
+/// Checks if a pixel can be drawn on the current canvas. Returns the index to write to if the check passes.
+fn check_pixel(ppm: &Matrix<Color>, pixel: (i32, i32)) -> Option<usize> {
     // convert bounds from [-n/2, n/2] to [0, n]
-    let ax = pixel.0 + len.0 as i32 / 2;
-    let ay = -pixel.1 + len.1 as i32 / 2; // y direction needs to be flipped because the canvas y direction goes top to bottom
+    let ax = pixel.0 + ppm.rlen as i32 / 2;
+    let ay = -pixel.1 + ppm.clen as i32 / 2; // y direction needs to be flipped because the canvas y direction goes top to bottom
 
-    // writes outside bounds are not currently used but might be helpful for postprocessing later
-    if ax <= len.0 as i32 && ay <= len.1 as i32 {
-        ppm.mat[ay as usize * len.0 + ax as usize] = color;
+    if ay < 0 || ay >= ppm.clen as i32 {
+        return None;
+    }
+
+    if ax < 0 || ax >= ppm.rlen as i32 {
+        return None;
+    }
+
+    Some(ay as usize * ppm.rlen + ax as usize)
+}
+
+/// Draws a pixel on `ppm`.
+/// `pixel` contains coordinates going from `-ppm.rlen/2` to `ppm.rlen/2` and `-ppm.clen/2` to `ppm.clen/2` respectively.
+/// Calls where `pixel.0` or `pixel.1` maps to a value outside the corresponding limit in `ppm` will be silently ignored.
+pub fn draw_pixel(ppm: &mut Matrix<Color>, pixel: (i32, i32), color: Color) {
+    if let Some(idx) = check_pixel(ppm, pixel) {
+        ppm.mat[idx] = color;
     }
 }
 

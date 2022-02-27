@@ -192,12 +192,8 @@ pub fn render(
                         Vector::lerp(cfg.world.background, color_v, (z - fog.0) / (fog.1 - fog.0));
                 }
 
-                draw_pixel(
-                    &mut buf,
-                    (x, y),
-                    (dims.0 + 1, dims.1 + 1), // use full dimensions to make buffer collection work properly
-                    map_color(color_v),
-                );
+                // use full dimensions to make buffer collection work properly
+                draw_pixel(&mut buf, (x, y), map_color(color_v));
             }
         }
     }
