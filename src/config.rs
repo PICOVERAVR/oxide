@@ -97,7 +97,7 @@ pub fn read_cfg(path: &str) -> Option<Triple> {
                         "ambient" => LightType::Ambient,
                         "directional" => LightType::Directional(get_v3(&lv, "position")),
                         "point" => LightType::Point(get_v3(&lv, "position")),
-                        _ => panic!("found illegal light type!"),
+                        _ => panic!("unknown light type"),
                     };
                     let color = get_v3(&lv, "color");
 

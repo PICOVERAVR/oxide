@@ -17,20 +17,24 @@ impl Vector {
         self.v
     }
 
+    /// Returns the first element of the vector.
     pub fn x(&self) -> f32 {
         self.v[0]
     }
 
+    /// Returns the second element of the vector.
     pub fn y(&self) -> f32 {
         assert!(self.len >= 1);
         self.v[1]
     }
 
+    /// Returns the third element of the vector.
     pub fn z(&self) -> f32 {
         assert!(self.len >= 2);
         self.v[2]
     }
 
+    /// Returns the fourth element of the vector.
     pub fn w(&self) -> f32 {
         assert!(self.len >= 3);
         self.v[3]
@@ -91,7 +95,7 @@ impl Vector {
 
     /// Returns the dot product of `self` and `rhs`.  Both vectors must have the same length.
     pub fn dot(self, rhs: Vector) -> f32 {
-        assert!(self.len == rhs.len);
+        assert_eq!(self.len, rhs.len);
 
         let mut sum = 0.0;
         for i in 0..self.len {
@@ -183,7 +187,7 @@ impl Vector {
     /// Returns the reflection of `i` off a surface with the normal `n`.
     /// I and N should be pointing in the same direction and have the same length.
     pub fn refl(i: Vector, n: Vector) -> Vector {
-        assert!(i.len() == n.len());
+        assert_eq!(i.len(), n.len());
         // compute R = 2 * N * dot(N, I) - I
         let s = n.dot(i) * 2.0;
         Vector::from_s(s, i.len()).mul(n).sub(i)
@@ -193,6 +197,8 @@ impl Vector {
     /// to the equation `a * f + b * (1 - f)`.
     /// `f` is clamped to the range [0, 1].
     pub fn lerp(a: Vector, b: Vector, f: f32) -> Vector {
+        assert_eq!(a.len(), 3);
+        assert_eq!(b.len(), 3);
         let f = f.clamp(0.0, 1.0);
         a * Vector::from_s(f, 3) + b * Vector::from_s(1.0 - f, 3)
     }
@@ -202,7 +208,7 @@ impl Add<Vector> for Vector {
     type Output = Vector;
 
     fn add(self, rhs: Vector) -> Vector {
-        assert!(self.len == rhs.len);
+        assert_eq!(self.len, rhs.len);
 
         Vector {
             v: [
@@ -220,7 +226,7 @@ impl Sub<Vector> for Vector {
     type Output = Vector;
 
     fn sub(self, rhs: Vector) -> Vector {
-        assert!(self.len == rhs.len);
+        assert_eq!(self.len, rhs.len);
 
         Vector {
             v: [
@@ -238,7 +244,7 @@ impl Mul<Vector> for Vector {
     type Output = Vector;
 
     fn mul(self, rhs: Vector) -> Vector {
-        assert!(self.len == rhs.len);
+        assert_eq!(self.len, rhs.len);
 
         Vector {
             v: [
@@ -256,7 +262,7 @@ impl Div<Vector> for Vector {
     type Output = Vector;
 
     fn div(self, rhs: Vector) -> Vector {
-        assert!(self.len == rhs.len);
+        assert_eq!(self.len, rhs.len);
 
         Vector {
             v: [
